@@ -1,0 +1,60 @@
+name: Create Wave Issues
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  issues: write
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Wave issues via REST API
+        env:
+          REPO: ${{ github.repository }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # Define issues as JSON objects, one per line
+          cat > issues.json <<'JSON'
+{"title":"[wave] Fix mobile navbar focus trap on iOS","body":"Overview: Mobile users on iOS cannot close the mobile menu using the back gesture; focus is trapped and scrolling is broken.\n\nType: Bug\nPriority: P2\nDifficulty: Small (≈2h)\n\nContext: frontend/src/components/layout/MobileMenu.tsx\n\nAcceptance criteria:\n- Menu closes and restores page scroll on iOS Safari\n- No JS errors in console\n- Add a small E2E/manual test\n","labels":["wave","bug","good-first-issue"]}
+{"title":"[wave] Add unit tests for useMarket hook","body":"Overview: Add unit tests for useMarket hook to cover loading states and error handling.\n\nType: Test\nPriority: P1\nDifficulty: Small (≈3h)\n\nContext: frontend/src/hooks/useMarket.ts\n\nAcceptance criteria:\n- Unit tests cover success, loading, and error states\n- Tests run in CI\n","labels":["wave","test"]}
+{"title":"[wave] Fix leaderboard sorting edge case","body":"Overview: Leaderboard sorting currently mis-orders players with equal points; add tiebreakers and stable sort.\n\nAcceptance criteria:\n- Stable tiebreaker implemented (e.g., volume then win rate)\n- Add unit test for tie case\n","labels":["wave","bug"]}
+{"title":"[wave] Improve market card responsiveness on small screens","body":"Overview: Tweak CSS to improve layout on <420px widths.\n\nAcceptance criteria:\n- Market cards readable on smallest devices\n- No overflow or layout jumps\n","labels":["wave","enhancement"]}
+{"title":"[wave] Update README with deployment quickstart","body":"Overview: Add a concise 'Deploy to Testnet' quickstart with commands and environment variables.\n\nAcceptance criteria:\n- Quickstart section added to README\n- Commands verified\n","labels":["wave","docs"]}
+{"title":"[wave] Add E2E test for placing a bet flow","body":"Overview: Implement Playwright/Vitest E2E test for the happy path of placing a bet and resolving.\n\nAcceptance criteria:\n- Test creates market, places bet, resolves outcome, and claims\n- Runs reliably in CI\n","labels":["wave","test","e2e"]}
+{"title":"[wave] Fix wallet connect error handling","body":"Overview: Improve error messages and retry logic when wallet connection fails.\n\nAcceptance criteria:\n- Clear user-facing error shown\n- Retry logic with exponential backoff\n","labels":["wave","bug"]}
+{"title":"[wave] Remove unused imports across frontend","body":"Overview: Run lint and remove unused imports/files to reduce bundle size.\n\nAcceptance criteria:\n- Lint passes\n- No unused imports left\n","labels":["wave","chore"]}
+{"title":"[wave] Add CONTRIBUTING.md with Wave workflow","body":"Overview: Document how to pick Wave issues, branch naming, PR checklist, and etiquette.\n\nAcceptance criteria:\n- CONTRIBUTING.md added with clear steps\n","labels":["wave","docs"]}
+{"title":"[wave] Add rate-limit to Soroban RPC calls in frontend","body":"Overview: Implement simple rate limit/debounce for frequent RPC calls to avoid throttling.\n\nAcceptance criteria:\n- Rate limiter implemented and tested locally\n","labels":["wave","enhancement","perf"]}
+{"title":"[wave] Fix rounding error in fee calculation","body":"Overview: Address rounding causing small discrepancies in payouts.\n\nAcceptance criteria:\n- Accurate payouts in unit tests\n","labels":["wave","bug"]}
+{"title":"[wave] Add admin-only UI for withdrawing fees","body":"Overview: Add a small admin panel to view and withdraw accumulated fees.\n\nAcceptance criteria:\n- Withdraw UI only visible to admin wallets\n- Calls contract withdraw function\n","labels":["wave","feature"]}
+{"title":"[wave] Chore: add conventional commit linting to CI","body":"Overview: Enforce commit message style with a GitHub Action.\n\nAcceptance criteria:\n- CI job fails on non-conventional messages\n","labels":["wave","ci","chore"]}
+{"title":"[wave] Fix toast positioning on narrow viewports","body":"Overview: Toast appears off-screen on small devices; adjust container and positioning.\n\nAcceptance criteria:\n- Toast visible and non-obstructive on small screens\n","labels":["wave","bug","ui"]}
+{"title":"[wave] Improve error logging for contract calls","body":"Overview: Add structured logging for failed contract calls to help debugging.\n\nAcceptance criteria:\n- Error logs include contract name, method, args, and error\n","labels":["wave","chore"]}
+{"title":"[wave] Add market image fallback improvements","body":"Overview: Improve SVG placeholder and ensure no console errors when image missing.\n\nAcceptance criteria:\n- Placeholder shows correctly\n- No console errors\n","labels":["wave","enhancement"]}
+{"title":"[wave] Test: update contract snapshot tests","body":"Overview: Update failing snapshots after recent refactors.\n\nAcceptance criteria:\n- Snapshots updated and committed\n","labels":["wave","test"]}
+{"title":"[wave] Accessibility audit: navbar and footer","body":"Overview: Quick accessibility pass focusing on landmark roles, contrast, and keyboard navigation.\n\nAcceptance criteria:\n- List of recommended fixes in PR\n","labels":["wave","accessibility"]}
+{"title":"[wave] Chore: update deps for frontend","body":"Overview: Upgrade minor frontend dependencies and fix any breaking changes.\n\nAcceptance criteria:\n- Tests pass locally\n- No major breaking changes\n","labels":["wave","chore"]}
+{"title":"[wave] Feature: add share to Telegram button","body":"Overview: Add Telegram share option alongside X and WhatsApp.\n\nAcceptance criteria:\n- Button opens Telegram share with prefilled text\n","labels":["wave","feature"]}
+{"title":"[wave] Fix claim button state during pending transactions","body":"Overview: Disable claim button while transaction pending to prevent double-claims.\n\nAcceptance criteria:\n- Button disabled during pending tx\n- UI shows spinner\n","labels":["wave","bug"]}
+{"title":"[wave] Improve README examples for RPC endpoints","body":"Overview: Add example RPC endpoints and env var names for local dev.\n\nAcceptance criteria:\n- Examples added to README\n","labels":["wave","docs"]}
+{"title":"[wave] Chore: remove deleted images from commit history (optional)","body":"Overview: Research whether to fully expunge deleted image files from git history to shrink repo; propose plan.\n\nAcceptance criteria:\n- Documented plan or steps\n","labels":["wave","spike"]}
+{"title":"[wave] Fix market resolve edge-case for simultaneous resolves","body":"Overview: Prevent double-resolution when two actors trigger resolve near-simultaneously.\n\nAcceptance criteria:\n- Contract prevents duplicate resolves and tests cover race case\n","labels":["wave","bug"]}
+{"title":"[wave] Add health-check endpoint for soroban RPC proxy","body":"Overview: Add a lightweight health-check and fallback behavior if RPC is unreachable.\n\nAcceptance criteria:\n- Health-check endpoint implemented and used by UI\n","labels":["wave","feature"]}
+{"title":"[wave] Docs: add contract ABI and example calls","body":"Overview: Add short examples showing how to call key contract methods via RPC.\n\nAcceptance criteria:\n- Examples for place_bet, resolve_market, and claim\n","labels":["wave","docs"]}
+{"title":"[wave] Fix inconsistent timezone display in leaderboard","body":"Overview: Normalize timestamps to user locale and add consistent formatting.\n\nAcceptance criteria:\n- Timestamps show correctly across views\n","labels":["wave","bug"]}
+{"title":"[wave] Add CONTRIBUTOR recognition in README","body":"Overview: Add a short section recognizing contributors and how to get credit for Wave tasks.\n\nAcceptance criteria:\n- Section added and examples shown\n","labels":["wave","docs"]}
+{"title":"[wave] Chore: add pre-commit hooks to run lint & tests","body":"Overview: Add basic pre-commit checks to run ESLint and TypeScript typecheck.\n\nAcceptance criteria:\n- Hooks added and documented\n","labels":["wave","chore"]}
+JSON
+
+          # Create issues
+          while IFS= read -r line; do
+            echo "Creating issue: $(echo "$line" | sed -n 's/.*"title":"\([^"]*\)".*/\1/p')"
+            curl -s -X POST -H "Authorization: Bearer $TOKEN" -H "Accept: application/vnd.github+json" https://api.github.com/repos/$REPO/issues -d "$line"
+            echo
+          done < issues.json
+          echo "Done creating issues"
