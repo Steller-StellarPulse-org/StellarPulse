@@ -1,0 +1,21 @@
+﻿[package]
+name = "referral_registry"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+doctest = false
+
+[features]
+testutils = ["soroban-sdk/testutils"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
+PULSE_token = { path = "../PULSE_token", features = ["testutils"] }
+leaderboard = { path = "../leaderboard", features = ["testutils"] }
+

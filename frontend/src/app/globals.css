@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Primary teal palette */
+  --color-primary-50: #f2fbfb;
+  --color-primary-100: #e6f7f6;
+  --color-primary-200: #ccefe9;
+  --color-primary-300: #99e0d3;
+  --color-primary-400: #4fd0ba;
+  --color-primary-500: #12b3a3;
+  --color-primary-600: #0f9a88;
+  --color-primary-700: #0c6f62;
+  --color-primary-800: #0a4f47;
+  --color-primary-900: #063934;
+
+  /* Accent colors */
+  --color-accent-gold: #f6c85f;
+  --color-accent-mint: #7ef0d6;
+  --color-accent-red: #ef4444;
+
+  /* Surface colors */
+  --color-surface: #0f0f14;
+  --color-surface-card: #1a1a24;
+  --color-surface-hover: #24243a;
+  --color-surface-border: #2e2e48;
+
+  /* Text */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+
+  /* Fonts */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-heading: "Space Grotesk", system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-slate-100 antialiased;
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply text-white font-semibold py-3 px-7 rounded-2xl transition-transform duration-200 transform-gpu;
+    background: linear-gradient(90deg,var(--color-primary-500),var(--color-accent-gold));
+    box-shadow: 0 6px 18px rgba(18,179,163,0.12), inset 0 -2px 6px rgba(0,0,0,0.12);
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border border-surface-border hover:bg-surface-hover text-slate-100 font-semibold py-2.5 px-6 rounded-xl transition-all duration-200 active:scale-95;
+  }
+
+  .card {
+    @apply bg-gradient-to-br from-surface/80 via-surface-card to-surface-card border border-surface-border rounded-3xl p-8 shadow-md;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-active {
+    @apply badge bg-green-500/20 text-green-400;
+  }
+
+  .badge-resolved {
+    @apply badge bg-primary-500/20 text-primary-400;
+  }
+
+  .badge-cancelled {
+    @apply badge bg-red-500/20 text-red-400;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-primary-600;
+  }
+}

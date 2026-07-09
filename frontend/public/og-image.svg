@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e1a"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="620" width="1200" height="10" fill="url(#accent)"/>
+  <circle cx="950" cy="315" r="200" fill="#6366f1" opacity="0.08"/>
+  <text x="100" y="260" font-family="system-ui,sans-serif" font-weight="800" font-size="72" fill="white">StellarPulse</text>
+  <text x="100" y="330" font-family="system-ui,sans-serif" font-weight="400" font-size="32" fill="#94a3b8">Decentralized Prediction Market on Stellar</text>
+  <text x="100" y="400" font-family="system-ui,sans-serif" font-weight="400" font-size="24" fill="#6366f1">Predict. Win or Lose — You Always Earn.</text>
+  <rect x="100" y="460" width="200" height="50" rx="12" fill="url(#accent)"/>
+  <text x="200" y="492" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="600" font-size="18" fill="white">Explore Markets</text>
+</svg>

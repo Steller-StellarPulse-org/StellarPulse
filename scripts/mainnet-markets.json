@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "category": "Crypto",
+    "question": "Will Bitcoin (BTC) reach $101,000 before December 31, 2026?",
+    "image_url": "https://s2.coinmarketcap.com/static/img/coins/128x128/1.png",
+    "duration_secs": 18403200,
+    "resolves": "December 31, 2026",
+    "days": 213,
+    "note": "213 days: June 1 → Dec 31 2026. Question asks about 2026. Duration covers full year."
+  },
+  {
+    "id": 2,
+    "category": "Crypto",
+    "question": "Will Ethereum (ETH) surpass $3,500 before December 31, 2026?",
+    "image_url": "https://s2.coinmarketcap.com/static/img/coins/128x128/1027.png",
+    "duration_secs": 18403200,
+    "resolves": "December 31, 2026",
+    "days": 213,
+    "note": "213 days: June 1 → Dec 31 2026. Question and expiry match exactly."
+  },
+  {
+    "id": 3,
+    "category": "Crypto",
+    "question": "Will Stellar (XLM) reach $0.50 before December 31, 2026?",
+    "image_url": "https://s2.coinmarketcap.com/static/img/coins/128x128/512.png",
+    "duration_secs": 18403200,
+    "resolves": "December 31, 2026",
+    "days": 213,
+    "note": "213 days: June 1 → Dec 31 2026. XLM community market."
+  },
+  {
+    "id": 4,
+    "category": "Sports",
+    "question": "Will Brazil win the 2026 FIFA World Cup Final on July 19, 2026?",
+    "image_url": "https://flagcdn.com/w320/br.png",
+    "duration_secs": 4147200,
+    "resolves": "July 19, 2026",
+    "days": 48,
+    "note": "48 days: June 1 → Jul 19 2026 (World Cup Final date). Question says July 19 2026."
+  },
+  {
+    "id": 5,
+    "category": "Sports",
+    "question": "Will Argentina win the 2026 FIFA World Cup Final on July 19, 2026?",
+    "image_url": "https://flagcdn.com/w320/ar.png",
+    "duration_secs": 4147200,
+    "resolves": "July 19, 2026",
+    "days": 48,
+    "note": "48 days: June 1 → Jul 19 2026. Defending champions. Same expiry as Market 4."
+  },
+  {
+    "id": 6,
+    "category": "Politics",
+    "question": "Will the US Federal Reserve cut interest rates at least once before December 31, 2026?",
+    "image_url": "https://static.vecteezy.com/system/resources/thumbnails/057/358/114/small/the-fed-or-federal-reserve-is-the-main-body-that-oversees-the-monetary-policy-of-the-united-states-photo.jpg",
+    "duration_secs": 18403200,
+    "resolves": "December 31, 2026",
+    "days": 213,
+    "note": "213 days: June 1 → Dec 31 2026. FOMC meets Sept 16 and Dec 16 — both in window."
+  },
+  {
+    "id": 7,
+    "category": "Science",
+    "question": "Will a commercially available humanoid robot be sold for under $50,000 by December 31, 2026?",
+    "image_url": "https://static.vecteezy.com/system/resources/thumbnails/058/130/220/small/a-humanoid-white-robot-in-a-hall-with-people-photo.jpg",
+    "duration_secs": 18403200,
+    "resolves": "December 31, 2026",
+    "days": 213,
+    "note": "213 days: June 1 → Dec 31 2026. Tesla Optimus, Figure, Boston Dynamics Atlas."
+  }
+]

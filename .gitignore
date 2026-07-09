@@ -1,0 +1,52 @@
+# ── Rust / Soroban ─────────────────────────────────────────────────────────────
+target/
+**/*.rs.bk
+*.wasm
+!contracts/*.wasm
+
+# ── Cargo ──────────────────────────────────────────────────────────────────────
+# Lock file is checked in for binaries, but not for libraries.
+# Since these are cdylib contracts (deployed artifacts), we keep the lockfile.
+# Uncomment the next line if you want to ignore it:
+# Cargo.lock
+
+# ── Node.js / Next.js ─────────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# ── Environment & Secrets ──────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.pem
+.deploy.env
+deploy-output.json
+deploy-mainnet-output.json
+
+# ── IDE / Editor ───────────────────────────────────────────────────────────────
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Soroban CLI ────────────────────────────────────────────────────────────────
+.soroban/
+
+# ── Misc ───────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vercel
+
+# ── Stellar CLI local identity keystore ────────────────────────────────────────
+.stellar/
