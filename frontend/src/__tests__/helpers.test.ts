@@ -4,6 +4,8 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  formatDate,
+  formatTime,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -168,6 +170,20 @@ describe("timeUntil", () => {
     const now = Math.floor(Date.now() / 1000);
     const future = now + 30;
     expect(timeUntil(future)).toBe("30s");
+  });
+});
+
+describe("timestamp formatting", () => {
+  it("formats dates with locale and timezone consistently", () => {
+    expect(formatDate(1772064000, "en-US", { timeZone: "UTC" })).toBe(
+      "Feb 26, 2026, 12:00 AM UTC"
+    );
+  });
+
+  it("formats times with locale and timezone consistently", () => {
+    expect(formatTime(1772064000, "en-US", { timeZone: "UTC" })).toBe(
+      "12:00 AM UTC"
+    );
   });
 });
 
