@@ -4,6 +4,8 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  formatDate,
+  formatTimestamp,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -128,7 +130,7 @@ describe("isValidAmount", () => {
 describe("timeUntil", () => {
   beforeEach(() => {
     vi.useFakeTimers();
-    // Pin "now" to a known Unix time: 2026-02-26T00:00:00Z = 1771977600
+    // Pin "now" to a known Unix time: 2026-02-26T00:00:00Z = 1772064000
     vi.setSystemTime(new Date("2026-02-26T00:00:00Z"));
   });
 
@@ -168,6 +170,38 @@ describe("timeUntil", () => {
     const now = Math.floor(Date.now() / 1000);
     const future = now + 30;
     expect(timeUntil(future)).toBe("30s");
+  });
+});
+
+// ── timestamp formatting ─────────────────────────────────────────────────────
+
+describe("formatTimestamp", () => {
+  it("formats a Unix timestamp with date, time, and timezone", () => {
+    expect(
+      formatTimestamp(1772064000, {
+        locale: "en-US",
+        timeZone: "UTC",
+        timeZoneName: "short",
+      })
+    ).toBe("Feb 26, 2026, 12:00 AM UTC");
+  });
+
+  it("uses the requested timezone for display", () => {
+    expect(
+      formatTimestamp(1772064000, {
+        locale: "en-US",
+        timeZone: "America/Los_Angeles",
+        timeZoneName: "short",
+      })
+    ).toBe("Feb 25, 2026, 04:00 PM PST");
+  });
+
+  it("keeps formatDate on the same formatter", () => {
+    expect(formatDate(1772064000)).toBe(formatTimestamp(1772064000));
+  });
+
+  it("handles invalid timestamps", () => {
+    expect(formatTimestamp(Number.NaN)).toBe("Invalid date");
   });
 });
 
