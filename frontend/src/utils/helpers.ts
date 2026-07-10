@@ -75,16 +75,40 @@ export function timeUntil(timestamp: number): string {
 }
 
 /**
- * Format a Unix timestamp to a locale-aware date string.
+ * Format a Unix timestamp to a locale-aware date/time string.
+ *
+ * Uses the browser/user locale and timezone by default, while accepting an
+ * override for deterministic tests and places that need a specific zone.
  */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+export function formatTimestamp(
+  timestamp: number,
+  options: {
+    locale?: string | string[];
+    timeZone?: string;
+    timeZoneName?: "short" | "long" | "shortOffset" | "longOffset" | "shortGeneric" | "longGeneric";
+  } = {}
+): string {
+  const date = new Date(timestamp * 1000);
+  if (!Number.isFinite(timestamp) || Number.isNaN(date.getTime())) {
+    return "Invalid date";
+  }
+
+  return new Intl.DateTimeFormat(options.locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    timeZone: options.timeZone,
+    timeZoneName: options.timeZoneName ?? "short",
+  }).format(date);
+}
+
+/**
+ * Format a Unix timestamp to a locale-aware date/time string.
+ */
+export function formatDate(timestamp: number): string {
+  return formatTimestamp(timestamp);
 }
 
 /**
