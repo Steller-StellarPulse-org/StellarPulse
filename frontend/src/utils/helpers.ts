@@ -77,14 +77,44 @@ export function timeUntil(timestamp: number): string {
 /**
  * Format a Unix timestamp to a locale-aware date string.
  */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+export function normalizeUnixTimestamp(timestamp: number): number {
+  return timestamp > 9_999_999_999 ? Math.floor(timestamp / 1000) : timestamp;
+}
+
+export function formatDate(
+  timestamp: number,
+  locale?: string | string[],
+  options: Intl.DateTimeFormatOptions = {}
+): string {
+  const unixTimestamp = normalizeUnixTimestamp(timestamp);
+
+  return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    timeZoneName: "short",
+    ...options,
+  }).format(new Date(unixTimestamp * 1000));
+}
+
+/**
+ * Format a Unix timestamp to a locale-aware time string.
+ */
+export function formatTime(
+  timestamp: number,
+  locale?: string | string[],
+  options: Intl.DateTimeFormatOptions = {}
+): string {
+  const unixTimestamp = normalizeUnixTimestamp(timestamp);
+
+  return new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+    ...options,
+  }).format(new Date(unixTimestamp * 1000));
 }
 
 /**

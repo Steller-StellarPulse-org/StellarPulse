@@ -2,6 +2,7 @@ import { rpc, scValToNative, xdr } from "@stellar/stellar-sdk";
 import { MARKET_CONTRACT_ID } from "@/config/network";
 import { getSorobanServer } from "@/services/soroban";
 import type { MarketEvent } from "@/types";
+import { normalizeUnixTimestamp } from "@/utils/helpers";
 
 // ── Event type names emitted by the PredictionMarket contract ─────────────────
 
@@ -32,7 +33,9 @@ function parseEventResponse(
     if (!isKnownEventType(eventName)) return null;
 
     const data = scValToNative(event.value);
-    const timestamp = new Date(event.ledgerClosedAt).getTime();
+    const timestamp = normalizeUnixTimestamp(
+      new Date(event.ledgerClosedAt).getTime()
+    );
 
     switch (eventName) {
       case "bet_placed":
