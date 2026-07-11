@@ -1,11 +1,6 @@
-// ── Pure Utility Functions ────────────────────────────────────────────────────
-
 const STROOPS_PER_XLM = 10_000_000n;
+const DASH = "—";
 
-/**
- * Convert stroops (bigint) to human-readable XLM string.
- * Example: 1234567890n → "123.456789 XLM"
- */
 export function formatXLM(stroops: bigint): string {
   const isNegative = stroops < 0n;
   const abs = isNegative ? -stroops : stroops;
@@ -20,64 +15,23 @@ export function formatXLM(stroops: bigint): string {
   return `${sign}${whole}.${fracStr} XLM`;
 }
 
-/**
- * Format a number (already in XLM units) to a display string.
- * Example: 12.5 → "12.50 XLM", 0 → "0 XLM"
- */
 export function displayXLM(xlm: number): string {
   if (xlm === 0) return "0 XLM";
   const formatted = xlm.toFixed(2).replace(/\.?0+$/, "");
   return `${formatted} XLM`;
 }
 
-/**
- * Truncate a Stellar address for display.
- * Example: "GABCDEFGHIJKLMNOPQRSTUVWXYZ234567" → "GABC...4567"
- */
 export function truncateAddress(addr: string): string {
   if (!addr || addr.length <= 10) return addr;
   return `${addr.slice(0, 4)}...${addr.slice(-4)}`;
 }
 
-/**
- * Validate a bet amount string against constraints.
- * - Must be a valid positive number
- * - Must be >= 1 (XLM minimum)
- * - Must not exceed the user's balance
- */
 export function isValidAmount(amount: string, balance: number): boolean {
   const parsed = parseFloat(amount);
   if (isNaN(parsed) || parsed < 1) return false;
   return parsed <= balance;
 }
 
-/**
- * Format a date from a Unix timestamp using the user's locale.
- * Example: 1712345678 → "Apr 5, 2025" (or localized equivalent)
- */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-/**
- * Format a time from a Unix timestamp (hours:minutes) using the user's locale.
- * Example: 1712345678 → "3:45 PM" (US) or "15:45" (DE)
- */
-export function formatTime(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleTimeString(undefined, {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-/**
- * Return a human-readable "time until" string from a Unix timestamp.
- * Example: timestamp 2 days from now → "2d 14h 32m"
- */
 export function timeUntil(timestamp: number): string {
   const now = Math.floor(Date.now() / 1000);
   const diff = timestamp - now;
@@ -92,9 +46,69 @@ export function timeUntil(timestamp: number): string {
   if (hours > 0) return `${hours}h ${minutes}m`;
   if (minutes > 0) return `${minutes}m`;
 
-  const seconds = diff;
-  return `${seconds}s`;
+  return `${diff}s`;
 }
+
+function isValidTimestamp(timestamp: number): boolean {
+  return Number.isFinite(timestamp) && timestamp > 0;
+}
+
+function formatTimestamp(
+  timestamp: number,
+  locale: Intl.LocalesArgument,
+  options: Intl.DateTimeFormatOptions
+): string {
+  if (!isValidTimestamp(timestamp)) return DASH;
+  return new Intl.DateTimeFormat(locale, options).format(
+    new Date(timestamp * 1000)
+  );
+}
+
+export function formatDateTime(
+  timestamp: number,
+  locale?: Intl.LocalesArgument,
+  options: Intl.DateTimeFormatOptions = {}
+): string {
+  return formatTimestamp(timestamp, locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+    ...options,
+  });
+}
+
+export function formatDate(
+  timestamp: number,
+  locale?: Intl.LocalesArgument,
+  options: Intl.DateTimeFormatOptions = {}
+): string {
+  return formatTimestamp(timestamp, locale, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+    ...options,
+  });
+}
+
+export function formatTime(
+  timestamp: number,
+  locale?: Intl.LocalesArgument,
+  options: Intl.DateTimeFormatOptions = {}
+): string {
+  return formatTimestamp(timestamp, locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+    ...options,
+  });
+}
+
 export function calculatePayout(
   userNetBet: number,
   winningSideTotal: number,
@@ -104,18 +118,55 @@ export function calculatePayout(
   return (userNetBet / winningSideTotal) * totalPool;
 }
 
-/**
- * Calculate YES/NO odds percentages from net totals.
- * Returns { yesPercent, noPercent } — each 0-100.
- */
 export function calculateOdds(
   yesTotal: number,
   noTotal: number
 ): { yesPercent: number; noPercent: number } {
   const total = yesTotal + noTotal;
   if (total === 0) return { yesPercent: 50, noPercent: 50 };
-  return {
-    yesPercent: Math.round((yesTotal / total) * 100),
-    noPercent: Math.round((noTotal / total) * 100),
-  };
+
+  const yesPercent = Math.round((yesTotal / total) * 100);
+  return { yesPercent, noPercent: 100 - yesPercent };
+}
+
+export function bpsToPercent(bps: number): string {
+  const pct = bps / 100;
+  return pct % 1 === 0 ? `${pct}%` : `${pct}%`;
+}
+
+export function explorerUrl(
+  type: "tx" | "account" | "contract",
+  id: string,
+  network: "public" | "testnet" = "public"
+): string {
+  const base = `https://stellar.expert/explorer/${network}`;
+  return `${base}/${type}/${id}`;
+}
+
+export function formatEventTime(timestampMs: number): string {
+  if (!Number.isFinite(timestampMs) || timestampMs <= 0) return DASH;
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(timestampMs));
+}
+
+export function timeAgo(timestamp: number): string {
+  if (!isValidTimestamp(timestamp)) return DASH;
+
+  const diff = Math.max(0, Math.floor(Date.now() / 1000) - timestamp);
+  if (diff < 5) return "just now";
+  if (diff < 60) return `${diff}s ago`;
+
+  const minutes = Math.floor(diff / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 }
