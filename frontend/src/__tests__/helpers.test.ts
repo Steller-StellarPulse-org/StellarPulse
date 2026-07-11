@@ -3,12 +3,30 @@ import {
   formatXLM,
   truncateAddress,
   isValidAmount,
+  formatDate,
+  formatTime,
   timeUntil,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
   explorerUrl,
 } from "@/utils/helpers";
+
+describe("localized timestamp formatters", () => {
+  const timestamp = Date.UTC(2026, 2, 1, 1, 30) / 1000;
+
+  it.each([
+    ["en-US", "UTC", "Mar 1, 2026, 01:30 AM", "01:30 AM"],
+    ["en-US", "America/New_York", "Feb 28, 2026, 08:30 PM", "08:30 PM"],
+    ["en-US", "Asia/Ho_Chi_Minh", "Mar 1, 2026, 08:30 AM", "08:30 AM"],
+    ["vi-VN", "UTC", "01:30 1 thg 3, 2026", "01:30"],
+    ["vi-VN", "America/New_York", "20:30 28 thg 2, 2026", "20:30"],
+    ["vi-VN", "Asia/Ho_Chi_Minh", "08:30 1 thg 3, 2026", "08:30"],
+  ])("formats %s in %s independently of the test machine", (locale, timeZone, date, time) => {
+    expect(formatDate(timestamp, locale, timeZone)).toBe(date);
+    expect(formatTime(timestamp, locale, timeZone)).toBe(time);
+  });
+});
 
 // ── formatXLM ─────────────────────────────────────────────────────────────────
 

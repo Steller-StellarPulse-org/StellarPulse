@@ -19,6 +19,22 @@ function isKnownEventType(s: string): s is ContractEventType {
   return (EVENT_TYPES as readonly string[]).includes(s);
 }
 
+/** Convert the ledger close time to the app's Unix-seconds timestamp contract. */
+export function ledgerClosedAtToUnixSeconds(
+  ledgerClosedAt: string | number | Date
+): number {
+  const timestampMs =
+    ledgerClosedAt instanceof Date
+      ? ledgerClosedAt.getTime()
+      : new Date(ledgerClosedAt).getTime();
+
+  if (!Number.isFinite(timestampMs)) {
+    throw new RangeError("Invalid ledger close timestamp");
+  }
+
+  return Math.floor(timestampMs / 1000);
+}
+
 // ── Parse a single event response into MarketEvent ────────────────────────────
 
 function parseEventResponse(
@@ -32,7 +48,7 @@ function parseEventResponse(
     if (!isKnownEventType(eventName)) return null;
 
     const data = scValToNative(event.value);
-    const timestamp = new Date(event.ledgerClosedAt).getTime();
+    const timestamp = ledgerClosedAtToUnixSeconds(event.ledgerClosedAt);
 
     switch (eventName) {
       case "bet_placed":
