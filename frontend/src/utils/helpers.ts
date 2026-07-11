@@ -98,6 +98,30 @@ export function formatDate(
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZoneName: "short",
+    ...(timeZone ? { timeZone } : {}),
+  }).format(new Date(timestampMs));
+}
+
+/**
+ * Format a seconds- or milliseconds-based Unix timestamp as a compact time.
+ * This uses the same unit normalization and locale/time-zone rules as
+ * `formatDate`, while preserving compact activity-feed layouts.
+ */
+export function formatTime(
+  timestamp: number,
+  locale?: string,
+  timeZone?: string
+): string {
+  const timestampMs =
+    Math.abs(timestamp) < MILLISECOND_TIMESTAMP_THRESHOLD
+      ? timestamp * 1000
+      : timestamp;
+
+  return new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
     ...(timeZone ? { timeZone } : {}),
   }).format(new Date(timestampMs));
 }

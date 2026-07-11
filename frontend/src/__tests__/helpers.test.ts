@@ -5,6 +5,7 @@ import {
   isValidAmount,
   timeUntil,
   formatDate,
+  formatTime,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -186,14 +187,21 @@ describe("formatDate", () => {
 
   it("formats a complete date and time consistently", () => {
     expect(formatDate(timestampMs, "en-US", "UTC")).toBe(
-      "Feb 26, 2026, 03:04 PM"
+      "Feb 26, 2026, 03:04 PM UTC"
     );
   });
 
   it("respects the requested locale", () => {
     expect(formatDate(timestampMs, "de-DE", "UTC")).toBe(
-      "26. Feb. 2026, 15:04"
+      "26. Feb. 2026, 15:04 UTC"
     );
+  });
+
+  it("keeps compact times consistent across timestamp units", () => {
+    expect(formatTime(timestampSeconds, "en-US", "UTC")).toBe(
+      formatTime(timestampMs, "en-US", "UTC")
+    );
+    expect(formatTime(timestampMs, "en-US", "UTC")).toBe("03:04 PM UTC");
   });
 });
 

@@ -10,7 +10,7 @@ import { getXlmBalance } from "@/services/soroban";
 import {
   displayXLM,
   formatXLM,
-  formatDate,
+  formatTime,
   calculatePayout,
   truncateAddress,
 } from "@/utils/helpers";
@@ -325,7 +325,7 @@ export default function MarketDetailPage({
                       </span>
                     </div>
                     <span className="text-xs text-slate-600 shrink-0">
-                      {formatDate(evt.timestamp)}
+                      {formatTime(evt.timestamp)}
                     </span>
                   </div>
                 ))}
