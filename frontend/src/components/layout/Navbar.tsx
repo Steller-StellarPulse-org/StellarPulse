@@ -42,10 +42,10 @@ export default function Navbar() {
           <Link
             href="/"
             className="flex items-center gap-3 select-none transition-transform duration-200 hover:scale-105"
-            aria-label="Stellar Pulse home"
+            aria-label="StellarPulse home"
           >
             <span className="text-xl font-bold text-white">SP</span>
-            <span className="hidden sm:inline-block text-lg font-semibold text-white text-gradient">Stellar Pulse</span>
+            <span className="hidden sm:inline-block text-lg font-semibold text-white text-gradient">StellarPulse</span>
           </Link>
 
           {/* Desktop nav links */}

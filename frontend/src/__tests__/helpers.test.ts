@@ -4,6 +4,8 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  formatDate,
+  formatTime,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -172,6 +174,45 @@ describe("timeUntil", () => {
 });
 
 // ── calculatePayout ───────────────────────────────────────────────────────────
+
+describe("timestamp formatting", () => {
+  const timestamp = Date.UTC(2026, 1, 26, 2, 5) / 1000;
+
+  it("formats date/time with the provided locale and time zone", () => {
+    const options = { timeZone: "UTC" };
+
+    expect(formatDate(timestamp, "en-US", options)).toBe(
+      new Intl.DateTimeFormat("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC",
+      }).format(new Date(timestamp * 1000))
+    );
+  });
+
+  it("does not hard-code a single locale", () => {
+    const options = { timeZone: "UTC" };
+
+    expect(formatDate(timestamp, "de-DE", options)).not.toBe(
+      formatDate(timestamp, "en-US", options)
+    );
+  });
+
+  it("formats compact local times through the shared helper", () => {
+    const options = { timeZone: "UTC" };
+
+    expect(formatTime(timestamp, "en-US", options)).toBe(
+      new Intl.DateTimeFormat("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC",
+      }).format(new Date(timestamp * 1000))
+    );
+  });
+});
 
 describe("calculatePayout", () => {
   it("calculates correct payout for sole winner (100% of winning side)", () => {
