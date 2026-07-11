@@ -74,17 +74,32 @@ export function timeUntil(timestamp: number): string {
   return `${seconds}s`;
 }
 
+/** Values below this threshold are Unix seconds; larger values are milliseconds. */
+const MILLISECOND_TIMESTAMP_THRESHOLD = 100_000_000_000;
+
 /**
- * Format a Unix timestamp to a locale-aware date string.
+ * Format a seconds- or milliseconds-based Unix timestamp in the user's locale.
+ * Supplying a locale and time zone is useful for deterministic rendering/tests;
+ * browser defaults are used in the application.
  */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+export function formatDate(
+  timestamp: number,
+  locale?: string,
+  timeZone?: string
+): string {
+  const timestampMs =
+    Math.abs(timestamp) < MILLISECOND_TIMESTAMP_THRESHOLD
+      ? timestamp * 1000
+      : timestamp;
+
+  return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    ...(timeZone ? { timeZone } : {}),
+  }).format(new Date(timestampMs));
 }
 
 /**
