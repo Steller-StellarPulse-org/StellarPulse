@@ -75,16 +75,55 @@ export function timeUntil(timestamp: number): string {
 }
 
 /**
- * Format a Unix timestamp to a locale-aware date string.
+ * Below this magnitude a timestamp is Unix seconds; at or above it, it's
+ * already in milliseconds. (100_000_000_000 seconds is year ~5138, so any
+ * real-world timestamp cleanly falls on one side of this line.) This makes
+ * every formatter below tolerant of a caller accidentally passing either
+ * unit, which is what caused the leaderboard/activity feed to show
+ * far-future dates when a millisecond value was multiplied by 1000 again.
  */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+const MS_THRESHOLD = 100_000_000_000;
+
+function toDate(timestamp: number): Date {
+  const ms = Math.abs(timestamp) < MS_THRESHOLD ? timestamp * 1000 : timestamp;
+  return new Date(ms);
+}
+
+
+export function formatDate(
+  timestamp: number,
+  locale?: string,
+  timeZone?: string
+): string {
+  const date = toDate(timestamp);
+  if (Number.isNaN(date.getTime())) return "Invalid date";
+
+  return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  });
+    timeZoneName: "short",
+    ...(timeZone ? { timeZone } : {}),
+  }).format(date);
+}
+
+
+export function formatTime(
+  timestamp: number,
+  locale?: string,
+  timeZone?: string
+): string {
+  const date = toDate(timestamp);
+  if (Number.isNaN(date.getTime())) return "Invalid date";
+
+  return new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+    ...(timeZone ? { timeZone } : {}),
+  }).format(date);
 }
 
 /**

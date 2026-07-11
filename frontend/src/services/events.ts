@@ -19,6 +19,19 @@ function isKnownEventType(s: string): s is ContractEventType {
   return (EVENT_TYPES as readonly string[]).includes(s);
 }
 
+/**
+ * Normalize a Soroban `ledgerClosedAt` value (ISO string from RPC) to Unix
+ * seconds. This is the single place the event pipeline crosses the
+ * "onchain time" boundary, so every `MarketEvent.timestamp` downstream is
+ * guaranteed to be Unix seconds — matching every other timestamp in the app
+ * (market close time, bet time, etc).
+ */
+export function ledgerClosedAtToUnixSeconds(
+  ledgerClosedAt: string | number | Date
+): number {
+  return Math.floor(new Date(ledgerClosedAt).getTime() / 1000);
+}
+
 // ── Parse a single event response into MarketEvent ────────────────────────────
 
 function parseEventResponse(
@@ -32,7 +45,7 @@ function parseEventResponse(
     if (!isKnownEventType(eventName)) return null;
 
     const data = scValToNative(event.value);
-    const timestamp = new Date(event.ledgerClosedAt).getTime();
+    const timestamp = ledgerClosedAtToUnixSeconds(event.ledgerClosedAt);
 
     switch (eventName) {
       case "bet_placed":
