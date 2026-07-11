@@ -77,11 +77,17 @@ export function timeUntil(timestamp: number): string {
 /**
  * Format a Unix timestamp to a locale-aware date string.
  */
+export function normalizeUnixTimestamp(timestamp: number): number {
+  return timestamp > 9_999_999_999 ? Math.floor(timestamp / 1000) : timestamp;
+}
+
 export function formatDate(
   timestamp: number,
   locale?: string | string[],
   options: Intl.DateTimeFormatOptions = {}
 ): string {
+  const unixTimestamp = normalizeUnixTimestamp(timestamp);
+
   return new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
@@ -90,7 +96,7 @@ export function formatDate(
     minute: "2-digit",
     timeZoneName: "short",
     ...options,
-  }).format(new Date(timestamp * 1000));
+  }).format(new Date(unixTimestamp * 1000));
 }
 
 /**
@@ -101,12 +107,14 @@ export function formatTime(
   locale?: string | string[],
   options: Intl.DateTimeFormatOptions = {}
 ): string {
+  const unixTimestamp = normalizeUnixTimestamp(timestamp);
+
   return new Intl.DateTimeFormat(locale, {
     hour: "2-digit",
     minute: "2-digit",
     timeZoneName: "short",
     ...options,
-  }).format(new Date(timestamp * 1000));
+  }).format(new Date(unixTimestamp * 1000));
 }
 
 /**

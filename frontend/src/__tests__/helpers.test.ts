@@ -4,6 +4,7 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  normalizeUnixTimestamp,
   formatDate,
   formatTime,
   calculatePayout,
@@ -174,8 +175,18 @@ describe("timeUntil", () => {
 });
 
 describe("timestamp formatting", () => {
+  it("normalizes millisecond timestamps to Unix seconds", () => {
+    expect(normalizeUnixTimestamp(1772064000000)).toBe(1772064000);
+  });
+
   it("formats dates with locale and timezone consistently", () => {
     expect(formatDate(1772064000, "en-US", { timeZone: "UTC" })).toBe(
+      "Feb 26, 2026, 12:00 AM UTC"
+    );
+  });
+
+  it("formats millisecond timestamps without drifting into the future", () => {
+    expect(formatDate(1772064000000, "en-US", { timeZone: "UTC" })).toBe(
       "Feb 26, 2026, 12:00 AM UTC"
     );
   });
