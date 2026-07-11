@@ -8,6 +8,8 @@ import {
   calculateOdds,
   bpsToPercent,
   explorerUrl,
+  formatDate,
+  formatTime,
 } from "@/utils/helpers";
 
 // ── formatXLM ─────────────────────────────────────────────────────────────────
@@ -274,5 +276,50 @@ describe("explorerUrl", () => {
     expect(explorerUrl("contract", "CDEF456")).toBe(
       "https://stellar.expert/explorer/public/contract/CDEF456"
     );
+  });
+});
+
+// formatDate / formatTime
+
+const FIXED_SECONDS = 1768473000; 
+const FIXED_MS = FIXED_SECONDS * 1000;
+
+describe("formatDate", () => {
+  it("renders the same instant the same way whether given seconds or milliseconds", () => {
+    // multiplied by 1000 again produced a wildly wrong future date.
+    expect(formatDate(FIXED_SECONDS, "en-US", "UTC")).toBe(
+      formatDate(FIXED_MS, "en-US", "UTC")
+    );
+  });
+
+  it("respects an explicit locale", () => {
+    const enUS = formatDate(FIXED_SECONDS, "en-US", "UTC");
+    const deDE = formatDate(FIXED_SECONDS, "de-DE", "UTC");
+    expect(enUS).not.toBe(deDE);
+  });
+
+  it("respects an explicit time zone and labels it", () => {
+    const utc = formatDate(FIXED_SECONDS, "en-US", "UTC");
+    const tokyo = formatDate(FIXED_SECONDS, "en-US", "Asia/Tokyo");
+    expect(utc).not.toBe(tokyo);
+    // A short zone label should be present so the instant is unambiguous.
+    expect(tokyo).toMatch(/GMT|JST|UTC/);
+  });
+
+  it("returns a stable invalid-date marker for NaN input", () => {
+    expect(formatDate(NaN)).toBe("Invalid date");
+  });
+});
+
+describe("formatTime", () => {
+  it("is unit-tolerant like formatDate", () => {
+    expect(formatTime(FIXED_SECONDS, "en-US", "UTC")).toBe(
+      formatTime(FIXED_MS, "en-US", "UTC")
+    );
+  });
+
+  it("omits the date portion", () => {
+    const time = formatTime(FIXED_SECONDS, "en-US", "UTC");
+    expect(time).not.toMatch(/2026/);
   });
 });
