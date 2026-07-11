@@ -75,16 +75,42 @@ export function timeUntil(timestamp: number): string {
 }
 
 /**
+ * Consistent date-time formatter used across the app.
+ * All timestamps are Unix seconds. Output is UTC so every user sees
+ * the same time regardless of browser locale.
+ */
+const DATE_OPTS: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZone: "UTC",
+  timeZoneName: "short",
+};
+
+/**
  * Format a Unix timestamp to a locale-aware date string.
+ * Timezone-normalized to UTC for consistency across all views.
  */
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return new Date(timestamp * 1000).toLocaleDateString("en-US", DATE_OPTS);
+}
+
+/**
+ * Format a Unix timestamp as a relative "time ago" string.
+ * Example: 3600 seconds ago → "1h ago"
+ */
+export function timeAgo(timestamp: number): string {
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - timestamp;
+
+  if (diff < 0) return "just now";
+  if (diff < 60) return `${diff}s ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return formatDate(timestamp);
 }
 
 /**
