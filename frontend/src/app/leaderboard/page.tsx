@@ -12,7 +12,7 @@ import { FiAward } from "react-icons/fi";
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<LeaderboardTab>("top_predictors");
-  const { data: players, loading, error } = useLeaderboard(tab);
+  const { data: players, loading, error, lastUpdatedAt } = useLeaderboard(tab);
   const { publicKey } = useWallet();
 
   return (
@@ -70,6 +70,7 @@ export default function LeaderboardPage() {
             <LeaderboardTable
               players={players}
               currentUser={publicKey ?? undefined}
+              lastUpdatedAt={lastUpdatedAt ?? undefined}
             />
           </div>
         )}

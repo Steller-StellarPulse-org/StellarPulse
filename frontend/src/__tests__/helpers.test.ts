@@ -4,6 +4,7 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  formatDate,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -172,6 +173,20 @@ describe("timeUntil", () => {
 });
 
 // ── calculatePayout ───────────────────────────────────────────────────────────
+
+describe("formatDate", () => {
+  it("formats timestamps with a locale, time, and timezone", () => {
+    expect(
+      formatDate(1772111100, { locale: "en-US", timeZone: "UTC" })
+    ).toBe("Feb 26, 2026, 1:05 PM UTC");
+  });
+
+  it("uses the requested locale when formatting", () => {
+    expect(
+      formatDate(1772111100, { locale: "en-GB", timeZone: "UTC" })
+    ).toBe("26 Feb 2026, 13:05 UTC");
+  });
+});
 
 describe("calculatePayout", () => {
   it("calculates correct payout for sole winner (100% of winning side)", () => {

@@ -22,6 +22,7 @@ interface UseLeaderboardResult {
   data: PlayerStats[];
   loading: boolean;
   error: string | null;
+  lastUpdatedAt: number | null;
   refetch: () => void;
 }
 
@@ -107,6 +108,7 @@ export function useLeaderboard(
   const [data, setData] = useState<PlayerStats[]>([]);
   const [loading, setLoading] = useState(!seeded.current);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
   const mountedRef = useRef(true);
   const initialLoadDone = useRef(false);
 
@@ -153,6 +155,7 @@ export function useLeaderboard(
       // Persist assembled leaderboard for instant stale-seed next time
       cache.set(LB_CACHE_KEY, players, 60_000);
       setAllPlayers(players);
+      setLastUpdatedAt(Math.floor(Date.now() / 1000));
     } catch (err) {
       if (!mountedRef.current) return;
       setError(
@@ -189,5 +192,5 @@ export function useLeaderboard(
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error, refetch };
+  return { data, loading, error, lastUpdatedAt, refetch };
 }

@@ -74,17 +74,27 @@ export function timeUntil(timestamp: number): string {
   return `${seconds}s`;
 }
 
+interface FormatDateOptions {
+  locale?: string;
+  timeZone?: string;
+}
+
 /**
- * Format a Unix timestamp to a locale-aware date string.
+ * Format a Unix timestamp to a locale-aware date/time string.
  */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+export function formatDate(
+  timestamp: number,
+  options: FormatDateOptions = {}
+): string {
+  return new Intl.DateTimeFormat(options.locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
-  });
+    timeZone: options.timeZone,
+    timeZoneName: "short",
+  }).format(new Date(timestamp * 1000));
 }
 
 /**

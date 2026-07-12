@@ -2,15 +2,18 @@ import React from "react";
 import type { PlayerStats } from "@/types";
 import PlayerRow from "./PlayerRow";
 import { FiUser } from "react-icons/fi";
+import { formatDate } from "@/utils/helpers";
 
 interface LeaderboardTableProps {
   players: PlayerStats[];
   currentUser?: string;
+  lastUpdatedAt?: number;
 }
 
 export default function LeaderboardTable({
   players,
   currentUser,
+  lastUpdatedAt,
 }: LeaderboardTableProps) {
   const currentUserPlayer = currentUser
     ? players.find((p) => p.address === currentUser)
@@ -41,6 +44,12 @@ export default function LeaderboardTable({
               </p>
             </div>
           </div>
+        </div>
+      )}
+
+      {lastUpdatedAt && (
+        <div className="mb-3 text-right text-xs text-slate-500">
+          Last updated {formatDate(lastUpdatedAt)}
         </div>
       )}
 
