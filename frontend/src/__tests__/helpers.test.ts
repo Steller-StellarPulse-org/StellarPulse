@@ -4,6 +4,8 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  formatDate,
+  formatTime,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -168,6 +170,38 @@ describe("timeUntil", () => {
     const now = Math.floor(Date.now() / 1000);
     const future = now + 30;
     expect(timeUntil(future)).toBe("30s");
+  });
+});
+
+// ── formatDate ────────────────────────────────────────────────────────────────
+
+describe("formatDate", () => {
+  const timestampMs = Date.UTC(2026, 1, 26, 15, 4);
+  const timestampSeconds = timestampMs / 1000;
+
+  it("normalizes Unix seconds and milliseconds to the same instant", () => {
+    expect(formatDate(timestampSeconds, "en-US", "UTC")).toBe(
+      formatDate(timestampMs, "en-US", "UTC")
+    );
+  });
+
+  it("formats a complete date and time consistently", () => {
+    expect(formatDate(timestampMs, "en-US", "UTC")).toBe(
+      "Feb 26, 2026, 03:04 PM UTC"
+    );
+  });
+
+  it("respects the requested locale", () => {
+    expect(formatDate(timestampMs, "de-DE", "UTC")).toBe(
+      "26. Feb. 2026, 15:04 UTC"
+    );
+  });
+
+  it("keeps compact times consistent across timestamp units", () => {
+    expect(formatTime(timestampSeconds, "en-US", "UTC")).toBe(
+      formatTime(timestampMs, "en-US", "UTC")
+    );
+    expect(formatTime(timestampMs, "en-US", "UTC")).toBe("03:04 PM UTC");
   });
 });
 

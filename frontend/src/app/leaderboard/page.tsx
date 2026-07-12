@@ -8,11 +8,12 @@ import LeaderboardTable from "@/components/leaderboard/LeaderboardTable";
 import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import { formatDate } from "@/utils/helpers";
 import { FiAward } from "react-icons/fi";
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<LeaderboardTab>("top_predictors");
-  const { data: players, loading, error } = useLeaderboard(tab);
+  const { data: players, loading, error, lastUpdated } = useLeaderboard(tab);
   const { publicKey } = useWallet();
 
   return (
@@ -31,6 +32,11 @@ export default function LeaderboardPage() {
         <p className="text-slate-400">
           Rankings update in real-time from onchain data.
         </p>
+        {lastUpdated !== null && (
+          <p className="mt-1 text-xs text-slate-500">
+            Last updated: {formatDate(lastUpdated)}
+          </p>
+        )}
       </div>
 
       {/* Tabs */}
@@ -77,4 +83,3 @@ export default function LeaderboardPage() {
     </div>
   );
 }
-
