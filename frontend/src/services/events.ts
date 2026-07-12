@@ -23,7 +23,25 @@ function isKnownEventType(s: string): s is ContractEventType {
 export function ledgerClosedAtToUnixSeconds(
   ledgerClosedAt: string | number | Date
 ): number {
-  return Math.floor(new Date(ledgerClosedAt).getTime() / 1000);
+  if (
+    (typeof ledgerClosedAt === "string" && ledgerClosedAt.trim() === "") ||
+    (typeof ledgerClosedAt !== "string" &&
+      typeof ledgerClosedAt !== "number" &&
+      !(ledgerClosedAt instanceof Date))
+  ) {
+    throw new RangeError("Invalid ledger close timestamp");
+  }
+
+  const timestampMs =
+    ledgerClosedAt instanceof Date
+      ? ledgerClosedAt.getTime()
+      : new Date(ledgerClosedAt).getTime();
+
+  if (!Number.isFinite(timestampMs)) {
+    throw new RangeError("Invalid ledger close timestamp");
+  }
+
+  return Math.floor(timestampMs / 1000);
 }
 
 // ── Parse a single event response into MarketEvent ────────────────────────────
