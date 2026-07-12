@@ -53,7 +53,7 @@ export function isValidAmount(amount: string, balance: number): boolean {
 }
 
 /**
- * Return a human-readable "time until" string from a Unix timestamp.
+ * Return a human-readable "time until" string from a Unix timestamp (seconds).
  * Example: timestamp 2 days from now → "2d 14h 32m"
  */
 export function timeUntil(timestamp: number): string {
@@ -75,16 +75,62 @@ export function timeUntil(timestamp: number): string {
 }
 
 /**
- * Format a Unix timestamp to a locale-aware date string.
+ * Format a Unix timestamp (seconds) to a locale-aware date/time string.
+ *
+ * Uses the viewer's browser locale and local timezone automatically — no
+ * hardcoded "en-US" or UTC offset. Timestamps are treated as Unix seconds
+ * and converted to milliseconds before constructing the Date.
+ *
+ * Example (en-GB, Europe/London): "12 Jul 2026, 14:30"
+ * Example (en-US, America/New_York): "Jul 12, 2026, 10:30 AM"
  */
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+  // Soroban ledger timestamps are Unix seconds. Guard against accidental
+  // millisecond values (> year 2100 in seconds ≈ 4_102_444_800).
+  const ms = timestamp > 4_102_444_800 ? timestamp : timestamp * 1000;
+
+  return new Date(ms).toLocaleString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * Return a human-readable relative time string from a Unix timestamp (seconds).
+ * Automatically uses the viewer's locale via Intl.RelativeTimeFormat.
+ *
+ * Examples: "2 hours ago", "3 days ago", "just now"
+ */
+export function timeAgo(timestamp: number): string {
+  // Same millisecond guard as formatDate
+  const ms = timestamp > 4_102_444_800 ? timestamp : timestamp * 1000;
+  const diffSeconds = Math.floor((Date.now() - ms) / 1000);
+
+  if (diffSeconds < 5) return "just now";
+
+  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+
+  const thresholds: [number, Intl.RelativeTimeFormatUnit][] = [
+    [60, "second"],
+    [3_600, "minute"],
+    [86_400, "hour"],
+    [604_800, "day"],
+    [2_592_000, "week"],
+    [31_536_000, "month"],
+  ];
+
+  for (const [limit, unit] of thresholds) {
+    if (diffSeconds < limit) {
+      const prev = thresholds[thresholds.indexOf([limit, unit]) - 1];
+      const divisor = prev ? prev[0] : 1;
+      return rtf.format(-Math.floor(diffSeconds / divisor), unit);
+    }
+  }
+
+  return rtf.format(-Math.floor(diffSeconds / 31_536_000), "year");
 }
 
 /**
@@ -105,7 +151,7 @@ export function calculatePayout(
 
 /**
  * Calculate YES/NO odds percentages from net totals.
- * Returns { yesPercent, noPercent } — each 0-100.
+ * Returns { yesPercent, noPercent } – each 0-100.
  */
 export function calculateOdds(
   totalYes: number,
