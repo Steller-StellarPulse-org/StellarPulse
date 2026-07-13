@@ -3,6 +3,7 @@ import { LEADERBOARD_CONTRACT_ID } from "@/config/network";
 import { simulateTransaction, getSimulationSource } from "@/services/soroban";
 import { getDisplayName } from "@/services/referral";
 import * as cache from "@/services/cache";
+import { sortLeaderboard } from "@/utils/helpers";
 import type { PlayerStats } from "@/types";
 
 // ── Cache keys & TTLs ────────────────────────────────────────────────────────
@@ -143,8 +144,11 @@ export async function getTopPlayers(
 
     const players = await batchAll(tasks, 10);
 
-    cache.set(cacheKey, players, LEADERBOARD_TTL);
-    return players;
+    // Apply a stable, deterministic ordering so players with equal points are
+    // ordered by volume then win rate (and never shuffle between loads).
+    const sorted = sortLeaderboard(players);
+    cache.set(cacheKey, sorted, LEADERBOARD_TTL);
+    return sorted;
   } catch (err) {
     console.error("[StellarPulse] getTopPlayers error:", err);
     return [];
