@@ -1,6 +1,5 @@
-import React from "react";
 import Link from "next/link";
-import { FiTwitter, FiGithub, FiMessageCircle } from "react-icons/fi";
+import { FiTwitter, FiMessageCircle } from "react-icons/fi";
 
 const PRODUCT_LINKS = [
   { href: "/markets", label: "Markets" },

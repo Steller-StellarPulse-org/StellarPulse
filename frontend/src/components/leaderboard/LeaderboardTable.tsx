@@ -1,4 +1,3 @@
-import React from "react";
 import type { PlayerStats } from "@/types";
 import PlayerRow from "./PlayerRow";
 import { FiUser } from "react-icons/fi";

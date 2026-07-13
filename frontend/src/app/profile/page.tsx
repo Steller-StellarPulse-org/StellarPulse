@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { useProfile } from "@/hooks/useProfile";
 import { useToken } from "@/hooks/useToken";
@@ -13,7 +13,7 @@ import Skeleton from "@/components/ui/Skeleton";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import WalletConnect from "@/components/wallet/WalletConnect";
 import type { Market, Bet } from "@/types";
-import { FiUser, FiTrendingUp, FiHexagon, FiLink } from "react-icons/fi";
+import { FiUser, FiTrendingUp, FiLink } from "react-icons/fi";
 
 interface BetHistoryItem {
   market: Market;

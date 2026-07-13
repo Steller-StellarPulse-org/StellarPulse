@@ -1,4 +1,3 @@
-import React from "react";
 import type { Market } from "@/types";
 import MarketCard from "./MarketCard";
 import Skeleton from "@/components/ui/Skeleton";

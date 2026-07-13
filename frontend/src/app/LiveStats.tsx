@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { useMarkets } from "@/hooks/useMarkets";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { useToken } from "@/hooks/useToken";

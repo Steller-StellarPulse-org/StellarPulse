@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLeaderboard, type LeaderboardTab } from "@/hooks/useLeaderboard";
 import { useWallet } from "@/hooks/useWallet";
 import LeaderboardTabs from "@/components/leaderboard/LeaderboardTabs";
