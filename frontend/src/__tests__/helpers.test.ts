@@ -6,6 +6,7 @@ import {
   timeUntil,
   calculatePayout,
   calculateOdds,
+  sortLeaderboard,
   bpsToPercent,
   explorerUrl,
 } from "@/utils/helpers";
@@ -228,6 +229,57 @@ describe("calculateOdds", () => {
     expect(result.yesPercent + result.noPercent).toBe(100);
     expect(result.yesPercent).toBe(33);
     expect(result.noPercent).toBe(67);
+  });
+});
+
+// ── sortLeaderboard ────────────────────────────────────────────────────────────
+
+const mkPlayer = (
+  address: string,
+  points: number,
+  totalBets: number,
+  winRate: number
+) => ({
+  address,
+  displayName: "",
+  points,
+  totalBets,
+  wonBets: 0,
+  lostBets: 0,
+  winRate,
+});
+
+describe("sortLeaderboard", () => {
+  it("orders by points descending", () => {
+    const sorted = sortLeaderboard([
+      mkPlayer("GA", 10, 5, 50),
+      mkPlayer("GB", 30, 5, 50),
+      mkPlayer("GC", 20, 5, 50),
+    ]);
+    expect(sorted.map((p) => p.address)).toEqual(["GB", "GC", "GA"]);
+  });
+
+  it("breaks point ties by volume (totalBets), then win rate", () => {
+    const sorted = sortLeaderboard([
+      mkPlayer("GA", 20, 5, 50), // same points, low volume
+      mkPlayer("GB", 20, 9, 40), // same points, highest volume → first
+      mkPlayer("GC", 20, 5, 80), // same points+volume as GA, higher win rate
+    ]);
+    expect(sorted.map((p) => p.address)).toEqual(["GB", "GC", "GA"]);
+  });
+
+  it("is deterministic for fully-tied players (address tiebreaker)", () => {
+    const a = mkPlayer("GZZZ", 20, 5, 50);
+    const b = mkPlayer("GAAA", 20, 5, 50);
+    const sorted = sortLeaderboard([a, b]);
+    expect(sorted.map((p) => p.address)).toEqual(["GAAA", "GZZZ"]);
+  });
+
+  it("does not mutate the input array", () => {
+    const input = [mkPlayer("GA", 10, 1, 1), mkPlayer("GB", 30, 1, 1)];
+    const snapshot = input.map((p) => p.address);
+    sortLeaderboard(input);
+    expect(input.map((p) => p.address)).toEqual(snapshot);
   });
 });
 

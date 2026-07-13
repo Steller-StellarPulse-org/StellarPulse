@@ -1,5 +1,7 @@
 // ── Pure Utility Functions ────────────────────────────────────────────────────
 
+import type { PlayerStats } from "@/types";
+
 const STROOPS_PER_XLM = 10_000_000n;
 
 /**
@@ -116,6 +118,34 @@ export function calculateOdds(
 
   const yesPercent = Math.round((totalYes / total) * 100);
   return { yesPercent, noPercent: 100 - yesPercent };
+}
+
+/**
+ * Stable, deterministic ordering for the leaderboard.
+ *
+ * The contract's `get_top_players` returns entries ordered by points but gives
+ * no guarantee about the relative order of players with EQUAL points, so tied
+ * players could appear in an arbitrary (and changing) order between loads.
+ *
+ * Ordering (all descending unless noted):
+ *   1. points        — higher is better
+ *   2. totalBets     — volume tiebreaker: more active player ranks higher
+ *   3. winRate       — then better win rate
+ *   4. address (asc) — final deterministic key so fully-tied players never swap
+ *
+ * `Array.prototype.sort` is stable (ES2019+); the address key additionally
+ * guarantees a fully deterministic result regardless of engine. The input array
+ * is not mutated.
+ */
+export function sortLeaderboard(players: PlayerStats[]): PlayerStats[] {
+  return [...players].sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+    if (b.totalBets !== a.totalBets) return b.totalBets - a.totalBets;
+    if (b.winRate !== a.winRate) return b.winRate - a.winRate;
+    if (a.address < b.address) return -1;
+    if (a.address > b.address) return 1;
+    return 0;
+  });
 }
 
 /**
