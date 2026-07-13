@@ -53,7 +53,7 @@ export default function MarketCard({ market }: MarketCardProps) {
           alt={market.question}
           rounded="top"
         />
-        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+        <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1 max-w-[70%]">
           <Badge variant={status.variant}>{status.label}</Badge>
           {endingSoon && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-[10px] font-semibold">
@@ -71,25 +71,27 @@ export default function MarketCard({ market }: MarketCardProps) {
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-3">
+      <div className="p-3 sm:p-4 space-y-3">
         <h3 className="font-heading font-semibold text-sm text-slate-100 leading-snug line-clamp-2 group-hover:text-white transition-colors">
           {market.question}
         </h3>
 
         <OddsBar yesPercent={yesPercent} noPercent={noPercent} />
 
-        <div className="flex items-center justify-between text-xs text-slate-500">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs text-slate-500">
+          <div className="flex items-center gap-3 min-w-0">
             <span className="inline-flex items-center gap-1">
-              <FiTrendingUp className="w-3.5 h-3.5" />
+              <FiTrendingUp className="w-3.5 h-3.5 shrink-0" />
               {totalPool.toFixed(1)} XLM
             </span>
             <span className="inline-flex items-center gap-1">
-              <FiUsers className="w-3.5 h-3.5" />
+              <FiUsers className="w-3.5 h-3.5 shrink-0" />
               {market.betCount}
             </span>
           </div>
-          <CountdownTimer endTime={market.endTime} />
+          <span className="shrink-0 tabular-nums">
+            <CountdownTimer endTime={market.endTime} />
+          </span>
         </div>
       </div>
     </Link>
