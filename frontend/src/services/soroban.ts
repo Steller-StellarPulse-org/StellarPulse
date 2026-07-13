@@ -13,6 +13,7 @@ import { NETWORK, ADMIN_PUBLIC_KEY, SPONSOR_SECRET_KEY, resolveSorobanUrl } from
 import { AppErrorType } from "@/types";
 import type { AppError, TransactionResult } from "@/types";
 import * as cache from "@/services/cache";
+import { logContractError } from "@/utils/logger";
 
 const XLM_BALANCE_TTL = 15_000;
 
@@ -359,6 +360,9 @@ export async function simulateTransaction<T = unknown>(
       "Simulation returned no result"
     );
   } catch (err) {
+    // Structured log for debugging failed contract calls (contract, method,
+    // args, error) before the error is classified and rethrown.
+    logContractError({ contract: contractId, method, args, error: err });
     if (isAppError(err)) throw err;
     throw classifyError(err);
   }
