@@ -75,16 +75,69 @@ export function timeUntil(timestamp: number): string {
 }
 
 /**
- * Format a Unix timestamp to a locale-aware date string.
+ * Format a Unix timestamp (seconds) to a locale-aware date string in the
+ * viewer's own locale and timezone.
+ *
+ * Passing `undefined` as the locale lets the runtime pick the user's locale,
+ * so the same instant renders consistently for every viewer regardless of
+ * where the author or server is located.
  */
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return "—";
+  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * Format an event timestamp (milliseconds since the Unix epoch, as produced by
+ * `pollMarketEvents`) to a locale-aware date+time string in the viewer's own
+ * locale and timezone.
+ *
+ * This is the canonical formatter for `MarketEvent.timestamp`. Use it instead
+ * of ad-hoc `new Date(ts * 1000)` calls — event timestamps are already in
+ * milliseconds, so multiplying again produces dates thousands of years off.
+ */
+export function formatEventTime(timestampMs: number): string {
+  if (!Number.isFinite(timestampMs) || timestampMs <= 0) return "—";
+  return new Date(timestampMs).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
+ * Return a locale-aware relative time string (e.g. "5 minutes ago") for an
+ * event timestamp in milliseconds. Uses `Intl.RelativeTimeFormat` with the
+ * viewer's locale so the output is localized consistently across views.
+ */
+export function timeAgo(timestampMs: number): string {
+  if (!Number.isFinite(timestampMs) || timestampMs <= 0) return "—";
+  const diffMs = Date.now() - timestampMs;
+  const absSec = Math.abs(diffMs) / 1000;
+  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  const ranges: [Intl.RelativeTimeFormatUnit, number][] = [
+    ["year", 60 * 60 * 24 * 365],
+    ["month", 60 * 60 * 24 * 30],
+    ["day", 60 * 60 * 24],
+    ["hour", 60 * 60],
+    ["minute", 60],
+    ["second", 1],
+  ];
+  for (const [unit, secs] of ranges) {
+    if (absSec >= secs || unit === "second") {
+      const value = -Math.round(diffMs / 1000 / secs);
+      return rtf.format(value, unit);
+    }
+  }
+  return rtf.format(0, "second");
 }
 
 /**

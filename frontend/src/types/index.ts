@@ -129,6 +129,8 @@ export interface MarketEvent {
   user: string;
   marketId: number;
   amount?: number;
+  /** Milliseconds since the Unix epoch (from `ledgerClosedAt`). Use
+   *  `formatEventTime` / `timeAgo` to render — do NOT multiply by 1000 again. */
   timestamp: number;
   txHash: string;
 }
