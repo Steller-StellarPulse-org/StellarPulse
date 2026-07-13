@@ -13,6 +13,7 @@ import { NETWORK, ADMIN_PUBLIC_KEY, SPONSOR_SECRET_KEY, resolveSorobanUrl } from
 import { AppErrorType } from "@/types";
 import type { AppError, TransactionResult } from "@/types";
 import * as cache from "@/services/cache";
+import { sorobanRpcLimiter } from "@/utils/rateLimit";
 
 const XLM_BALANCE_TTL = 15_000;
 
@@ -335,6 +336,8 @@ export async function simulateTransaction<T = unknown>(
       .setTimeout(30)
       .build();
 
+    // Throttle the RPC read to avoid provider rate-limiting under bursty load.
+    await sorobanRpcLimiter.acquire();
     const simResponse = await server.simulateTransaction(tx);
 
     // Check for simulation error
