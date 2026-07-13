@@ -2,6 +2,9 @@
 
 const STROOPS_PER_XLM = 10_000_000n;
 
+/** Decimal places in one XLM (7 — matching integer stroops). */
+const STROOP_DECIMALS = 7;
+
 /**
  * Convert stroops (bigint) to human-readable XLM string.
  * Example: 1234567890n → "123.456789 XLM"
@@ -93,6 +96,13 @@ export function formatDate(timestamp: number): string {
  * payout = (userNetBet / winningSideTotal) × totalPool
  *
  * All values in XLM (not stroops).
+ *
+ * The result is floored to stroop precision (7 decimal places) so the returned
+ * amount maps exactly onto an integer number of stroops. Raw floating-point
+ * division otherwise yields dust like 3.3333333333333335 XLM, and summing such
+ * values across winners produces small payout discrepancies. Flooring (rather
+ * than rounding to nearest) guarantees the sum of all winners' payouts never
+ * exceeds the pool — the leftover dust stays in the contract as remainder.
  */
 export function calculatePayout(
   userNetBet: number,
@@ -100,7 +110,32 @@ export function calculatePayout(
   totalPool: number
 ): number {
   if (winningSideTotal <= 0) return 0;
-  return (userNetBet / winningSideTotal) * totalPool;
+  const raw = (userNetBet / winningSideTotal) * totalPool;
+  if (!Number.isFinite(raw) || raw <= 0) return 0;
+  const factor = 10 ** STROOP_DECIMALS;
+  // Add a tiny epsilon before flooring so a mathematically-exact stroop
+  // boundary (e.g. 33333333.000000004 from float error) is not shaved down.
+  return Math.floor(raw * factor + Number.EPSILON * factor) / factor;
+}
+
+/**
+ * Exact integer payout in stroops (1 XLM = 10_000_000 stroops).
+ *
+ * Uses BigInt arithmetic so there is zero floating-point error — this is the
+ * correct path for on-chain payouts, where every amount must be an exact
+ * integer number of stroops. Like {@link calculatePayout}, it floors so the
+ * total paid out never exceeds the pool.
+ *
+ * payout = floor((userNetBetStroops × totalPoolStroops) / winningSideTotalStroops)
+ */
+export function calculatePayoutStroops(
+  userNetBetStroops: bigint,
+  winningSideTotalStroops: bigint,
+  totalPoolStroops: bigint
+): bigint {
+  if (winningSideTotalStroops <= 0n) return 0n;
+  const payout = (userNetBetStroops * totalPoolStroops) / winningSideTotalStroops;
+  return payout < 0n ? 0n : payout;
 }
 
 /**

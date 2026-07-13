@@ -5,6 +5,7 @@ import {
   isValidAmount,
   timeUntil,
   calculatePayout,
+  calculatePayoutStroops,
   calculateOdds,
   bpsToPercent,
   explorerUrl,
@@ -201,6 +202,41 @@ describe("calculatePayout", () => {
     // User bet 1, winning side 3, pool 10 → ~3.333
     const payout = calculatePayout(1, 3, 10);
     expect(payout).toBeCloseTo(3.333, 2);
+  });
+
+  it("floors to stroop precision (7 dp) — no float dust", () => {
+    // 1/3 of 10 XLM = 3.333333... XLM; must floor to the stroop, not emit
+    // 3.3333333333333335.
+    const payout = calculatePayout(1, 3, 10);
+    expect(payout).toBe(3.3333333);
+    // Multiplying back to stroops is an exact integer.
+    expect(Number.isInteger(payout * 10_000_000)).toBe(true);
+  });
+
+  it("never lets summed payouts exceed the pool", () => {
+    // Three equal winners splitting a 10 XLM pool.
+    const each = calculatePayout(1, 3, 10);
+    expect(each * 3).toBeLessThanOrEqual(10);
+  });
+});
+
+// ── calculatePayoutStroops (exact BigInt) ────────────────────────────────────
+
+describe("calculatePayoutStroops", () => {
+  it("computes exact integer stroops with no float error", () => {
+    // 1/3 of 100_000_000 stroops = 33333333.33... → floor to 33333333.
+    expect(calculatePayoutStroops(10_000_000n, 30_000_000n, 100_000_000n)).toBe(
+      33_333_333n
+    );
+  });
+
+  it("pays the whole pool to a sole winner exactly", () => {
+    expect(calculatePayoutStroops(100n, 100n, 300n)).toBe(300n);
+  });
+
+  it("returns 0 for a zero/negative winning side", () => {
+    expect(calculatePayoutStroops(100n, 0n, 500n)).toBe(0n);
+    expect(calculatePayoutStroops(100n, -1n, 500n)).toBe(0n);
   });
 });
 
