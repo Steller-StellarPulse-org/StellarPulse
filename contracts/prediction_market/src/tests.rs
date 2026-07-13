@@ -1,4 +1,4 @@
-﻿#![cfg(test)]
+#![cfg(test)]
 
 use super::*;
 use soroban_sdk::{
@@ -387,6 +387,35 @@ fn test_reject_double_resolution() {
     advance_time(&t.env, 3601);
     t.client.resolve_market(&t.admin, &id, &true);
     t.client.resolve_market(&t.admin, &id, &false);
+}
+
+// ── 16b. Reject near-simultaneous resolve by TWO different actors ──────────────
+//
+// On Soroban, two near-simultaneous resolve transactions are ordered, so the
+// second one must observe `market.resolved == true` and be rejected. The
+// single-actor case is covered above; this test covers the two-actor race —
+// an admin and a separately-authorized resolver both attempt to resolve the
+// same market, and whichever lands second must fail with MarketResolved (#7).
+
+#[test]
+#[should_panic(expected = "Error(Contract, #7)")]
+fn test_reject_simultaneous_resolve_two_actors() {
+    let t = setup();
+    let id = create_test_market(&t);
+    let user = Address::generate(&t.env);
+    fund_user(&t, &user, 200_0000000);
+    t.client.place_bet(&user, &id, &true, &50_0000000_i128);
+    advance_time(&t.env, 3601);
+
+    // A second, independently-authorized resolver (the "other actor").
+    let resolver = Address::generate(&t.env);
+    t.client.add_resolver(&t.admin, &resolver);
+    assert!(t.client.is_resolver(&resolver));
+
+    // First resolve (admin) wins the race...
+    t.client.resolve_market(&t.admin, &id, &true);
+    // ...the resolver's near-simultaneous resolve of the same market must panic.
+    t.client.resolve_market(&resolver, &id, &false);
 }
 
 // ── 17. Claim-style cancel: admin marks cancelled, bettors pull refunds ───────
