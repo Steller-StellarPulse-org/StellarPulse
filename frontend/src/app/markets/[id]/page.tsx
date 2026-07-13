@@ -72,9 +72,11 @@ export default function MarketDetailPage({
   }, [marketId]);
 
   const handleClaim = useCallback(async () => {
+    // Guard against double-clicks / re-entry while a claim tx is pending.
+    if (claiming) return;
     await claimReward(marketId);
     refetch();
-  }, [claimReward, marketId, refetch]);
+  }, [claiming, claimReward, marketId, refetch]);
 
   const balance = xlmBalance;
 
@@ -275,7 +277,7 @@ export default function MarketDetailPage({
                 {claiming ? (
                   <TxProgress step={claimStage === "idle" ? "building" : claimStage} />
                 ) : (
-                  <Button onClick={handleClaim} variant="primary" fullWidth>
+                  <Button onClick={handleClaim} variant="primary" fullWidth disabled={claiming}>
                     Claim Rewards
                   </Button>
                 )}

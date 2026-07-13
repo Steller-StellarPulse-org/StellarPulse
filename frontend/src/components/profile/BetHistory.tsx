@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import type { Market, Bet } from "@/types";
@@ -44,6 +44,9 @@ export default function BetHistory({ bets, loading }: BetHistoryProps) {
   }, [stage, error, showToast]);
 
   const handleClaim = async (marketId: number) => {
+    // Guard against double-clicks / re-entry while a claim tx is already
+    // pending — `claiming` is shared hook state and can only track one tx.
+    if (claiming) return;
     setClaimingId(marketId);
     await submit(marketId);
   };
@@ -137,7 +140,9 @@ export default function BetHistory({ bets, loading }: BetHistoryProps) {
                       ) : canClaim && !bet.claimed ? (
                         <button
                           onClick={() => handleClaim(market.id)}
-                          className="btn-primary text-xs px-3 py-1.5"
+                          disabled={claiming}
+                          aria-busy={isThisClaiming}
+                          className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           Claim
                         </button>
