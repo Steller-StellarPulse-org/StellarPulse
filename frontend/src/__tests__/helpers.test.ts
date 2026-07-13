@@ -4,6 +4,9 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  formatDate,
+  formatEventTime,
+  timeAgo,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -168,6 +171,71 @@ describe("timeUntil", () => {
     const now = Math.floor(Date.now() / 1000);
     const future = now + 30;
     expect(timeUntil(future)).toBe("30s");
+  });
+});
+
+// ── formatDate (seconds, locale-aware) ───────────────────────────────────────
+
+describe("formatDate", () => {
+  it("renders a Unix-seconds timestamp in the correct year", () => {
+    // 2026-02-26T00:00:00Z = 1771977600 seconds
+    expect(formatDate(1771977600)).toContain("2026");
+  });
+
+  it("returns an em dash for invalid / non-positive input", () => {
+    expect(formatDate(0)).toBe("—");
+    expect(formatDate(-5)).toBe("—");
+    expect(formatDate(NaN)).toBe("—");
+  });
+});
+
+// ── formatEventTime (milliseconds, locale-aware) ─────────────────────────────
+
+describe("formatEventTime", () => {
+  it("treats the input as milliseconds (no double ×1000)", () => {
+    // 2026-02-26T00:00:00Z = 1771977600000 ms. If this were multiplied by 1000
+    // again the year would be ~58121 — this guards the unit-mismatch bug.
+    const out = formatEventTime(1771977600000);
+    expect(out).toContain("2026");
+    expect(out).not.toContain("58121");
+  });
+
+  it("returns an em dash for invalid / non-positive input", () => {
+    expect(formatEventTime(0)).toBe("—");
+    expect(formatEventTime(NaN)).toBe("—");
+  });
+});
+
+// ── timeAgo (milliseconds, locale-aware relative time) ───────────────────────
+
+describe("timeAgo", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-02-26T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("describes a recent past timestamp in minutes", () => {
+    const now = Date.now();
+    expect(timeAgo(now - 5 * 60 * 1000)).toMatch(/5.*minute/i);
+  });
+
+  it("describes a past timestamp in hours", () => {
+    const now = Date.now();
+    expect(timeAgo(now - 3 * 3600 * 1000)).toMatch(/3.*hour/i);
+  });
+
+  it("handles future timestamps without throwing", () => {
+    const now = Date.now();
+    expect(timeAgo(now + 5 * 60 * 1000)).toMatch(/5.*minute/i);
+  });
+
+  it("returns an em dash for invalid / non-positive input", () => {
+    expect(timeAgo(0)).toBe("—");
+    expect(timeAgo(NaN)).toBe("—");
   });
 });
 
