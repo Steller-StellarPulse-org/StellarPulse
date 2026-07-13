@@ -12,6 +12,12 @@ import type { WalletType } from "@/wallet/types";
 import { AppErrorType } from "@/types";
 import type { AppError } from "@/types";
 import { setSimulationSource } from "@/services/soroban";
+import {
+  backoffDelay,
+  friendlyWalletError,
+  isRetryableWalletError,
+  sleep,
+} from "@/wallet/connectErrors";
 
 // ── localStorage keys ─────────────────────────────────────────────────────────
 
@@ -93,27 +99,42 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       setConnecting(true);
       setError(null);
 
+      const MAX_ATTEMPTS = 3;
+      let lastErr: unknown = null;
+
       try {
-        const kit = await getKit();
-        kit.selectWallet(type);
-        const { publicKey: pk } = await kit.connectKit();
+        for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+          try {
+            const kit = await getKit();
+            kit.selectWallet(type);
+            const { publicKey: pk } = await kit.connectKit();
 
-        setPublicKey(pk);
-        setWalletType(type);
-        setSimulationSource(pk);
+            setPublicKey(pk);
+            setWalletType(type);
+            setSimulationSource(pk);
 
-        // Persist for auto-reconnect
-        localStorage.setItem(WALLET_TYPE_KEY, type);
-        localStorage.setItem(WALLET_PUBKEY_KEY, pk);
+            // Persist for auto-reconnect
+            localStorage.setItem(WALLET_TYPE_KEY, type);
+            localStorage.setItem(WALLET_PUBKEY_KEY, pk);
+            return; // success — `finally` resets `connecting`
+          } catch (err) {
+            lastErr = err;
+            // Only retry transient failures; never retry an explicit user
+            // rejection / missing wallet, and stop after the final attempt.
+            if (!isRetryableWalletError(err) || attempt === MAX_ATTEMPTS - 1) {
+              break;
+            }
+            await sleep(backoffDelay(attempt));
+          }
+        }
+        // All attempts exhausted (or a non-retryable error) — surface it.
+        throw lastErr;
       } catch (err) {
         const appError = isAppError(err)
-          ? err
+          ? { ...err, message: friendlyWalletError(err) }
           : {
               type: AppErrorType.WALLET,
-              message:
-                err instanceof Error
-                  ? err.message
-                  : "Failed to connect wallet",
+              message: friendlyWalletError(err),
             };
         setError(appError);
         throw appError;
