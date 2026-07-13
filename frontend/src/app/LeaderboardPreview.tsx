@@ -1,6 +1,5 @@
 ﻿"use client";
 
-import React from "react";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { FiAward } from "react-icons/fi";
 import Skeleton from "@/components/ui/Skeleton";

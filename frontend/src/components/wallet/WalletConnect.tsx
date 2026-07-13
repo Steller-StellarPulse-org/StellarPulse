@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FiCreditCard, FiChevronDown, FiLogOut, FiCopy, FiCheck } from "react-icons/fi";
 import { useWallet } from "@/hooks/useWallet";
 import { truncateAddress } from "@/utils/helpers";

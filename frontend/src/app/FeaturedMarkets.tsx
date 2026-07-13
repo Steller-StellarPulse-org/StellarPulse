@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useMarkets } from "@/hooks/useMarkets";
 import MarketCard from "@/components/market/MarketCard";
 import Skeleton from "@/components/ui/Skeleton";

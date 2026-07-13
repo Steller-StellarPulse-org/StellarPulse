@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 import type { MarketFilter, MarketSort } from "@/types";
 

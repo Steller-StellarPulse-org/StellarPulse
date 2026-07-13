@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { ADMIN_PUBLIC_KEY } from "@/config/network";
 import CreateMarketForm from "@/components/admin/CreateMarketForm";

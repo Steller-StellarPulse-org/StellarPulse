@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { useToast } from "@/hooks/useToast";
 import { getMarkets, resolveMarket, cancelMarket } from "@/services/market";

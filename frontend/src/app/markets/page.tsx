@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useMarkets } from "@/hooks/useMarkets";
 import MarketFilters from "@/components/market/MarketFilters";
 import MarketGrid from "@/components/market/MarketGrid";

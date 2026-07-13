@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useWallet } from "@/hooks/useWallet";
 import { useReferral } from "@/hooks/useReferral";
 import { registerReferral, resolveAddressByName } from "@/services/referral";
