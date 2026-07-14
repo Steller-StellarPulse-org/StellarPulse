@@ -319,7 +319,7 @@ export default function MarketDetailPage({
                       </span>
                     </div>
                     <span className="text-xs text-slate-600 shrink-0">
-                      {new Date(evt.timestamp * 1000).toLocaleTimeString()}
+                      {new Date(evt.timestamp * 1000).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
                 ))}
