@@ -21,17 +21,57 @@ interface MobileMenuProps {
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname();
 
-  // Lock body scroll when open
+  // Lock body scroll when open; restore on close / unmount (iOS-safe)
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
+    if (!isOpen) {
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.top = "";
+      return;
     }
+    const scrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.width = "100%";
+    document.body.style.top = `-${scrollY}px`;
     return () => {
       document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.top = "";
+      window.scrollTo(0, scrollY);
     };
   }, [isOpen]);
+
+  // iOS Safari back gesture / history: close menu instead of trapping
+  useEffect(() => {
+    if (!isOpen) return;
+    const onPop = () => {
+      onClose();
+    };
+    // Push a history entry so first back closes the menu
+    const key = "stellarpulse-mobile-menu";
+    window.history.pushState({ [key]: true }, "");
+    window.addEventListener("popstate", onPop);
+    return () => {
+      window.removeEventListener("popstate", onPop);
+      // If still open cleanup, drop the synthetic entry without navigating away
+      if (window.history.state && window.history.state[key]) {
+        window.history.back();
+      }
+    };
+  }, [isOpen, onClose]);
+
+  // Escape closes menu
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
