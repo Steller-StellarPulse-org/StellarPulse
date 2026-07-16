@@ -9,4 +9,8 @@ describe("event timestamp parsing", () => {
       Date.UTC(2026, 1, 26, 2, 5, 30) / 1000
     );
   });
+
+  it("preserves numeric Unix seconds instead of treating them as milliseconds", () => {
+    expect(ledgerClosedAtToUnixSeconds(1771985130)).toBe(1771985130);
+  });
 });
