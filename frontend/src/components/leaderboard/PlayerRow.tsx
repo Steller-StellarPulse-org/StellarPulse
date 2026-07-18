@@ -1,6 +1,7 @@
-﻿import React from "react";
+import React from "react";
 import type { PlayerStats } from "@/types";
 import { explorerUrl } from "@/utils/helpers";
+import { formatTimeAgo } from "@/utils/date";
 
 interface PlayerRowProps {
   player: PlayerStats;
@@ -30,18 +31,20 @@ export default function PlayerRow({
         isCurrentUser ? "bg-primary-500/10" : ""
       }`}
     >
-      {/* Rank */}
-      <td className="py-3.5 pr-4 font-medium">
-        {medal ? (
-          <span
-            className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-sm ${medal.bg}`}
-          >
-            {medal.emoji}
-          </span>
-        ) : (
-          <span className="text-slate-500 pl-1.5">{rank}</span>
-        )}
-      </td>
+    
+    <td className="py-3 pr-4">
+  <div className="flex flex-col">
+   
+    <span className="text-white font-mono">
+      {player.address.slice(0, 4)}...{player.address.slice(-4)}
+    </span>
+    {player.lastActive && (
+      <span className="text-xs text-slate-500">
+        Active {formatTimeAgo(player.lastActive)}
+      </span>
+    )}
+    </div>
+    </td>
 
       {/* Player */}
       <td className="py-3.5 pr-4">

@@ -50,6 +50,7 @@ export interface PlayerStats {
   wonBets: number;
   lostBets: number;
   winRate: number;
+  lastActive?: string | number | Date;
 }
 
 // ── Token Info ────────────────────────────────────────────────────────────────
