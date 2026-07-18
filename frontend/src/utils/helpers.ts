@@ -74,17 +74,43 @@ export function timeUntil(timestamp: number): string {
   return `${seconds}s`;
 }
 
-/**
- * Format a Unix timestamp to a locale-aware date string.
- */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+const DATE_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZoneName: "short",
+};
+
+const TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZoneName: "short",
+};
+
+/** Format a Unix-seconds timestamp in the user's locale and time zone. */
+export function formatDate(
+  timestamp: number,
+  locale?: Intl.LocalesArgument,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    ...DATE_TIME_OPTIONS,
+    ...options,
+  }).format(new Date(timestamp * 1000));
+}
+
+/** Format a Unix-seconds timestamp for compact activity displays. */
+export function formatTime(
+  timestamp: number,
+  locale?: Intl.LocalesArgument,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    ...TIME_OPTIONS,
+    ...options,
+  }).format(new Date(timestamp * 1000));
 }
 
 /**
