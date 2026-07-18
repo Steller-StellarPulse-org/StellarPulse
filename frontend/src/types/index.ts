@@ -1,134 +1,58 @@
-// ── Market ────────────────────────────────────────────────────────────────────
+// frontend/src/utils/date.ts
 
-export type MarketCategory =
-  | "Crypto"
-  | "Sports"
-  | "Politics"
-  | "Entertainment"
-  | "Science"
-  | "Other";
+/**
+ * Format a timestamp as a relative time string (e.g., "5m ago", "2h ago").
+ * Normalizes timestamps to user's local timezone automatically.
+ * Handles Unix timestamps (seconds and milliseconds), ISO strings, and Date objects.
+ */
+export function formatTimeAgo(dateInput: string | number | Date | null | undefined): string {
+  if (!dateInput) return 'Never';
+  
+  const now = new Date();
+  let past: Date;
 
-export const MARKET_CATEGORIES: MarketCategory[] = [
-  "Crypto",
-  "Sports",
-  "Politics",
-  "Entertainment",
-  "Science",
-  "Other",
-];
+  // Handle different timestamp formats
+  if (typeof dateInput === 'number') {
+    // Unix timestamp in seconds (e.g., 1704067200)
+    if (dateInput < 100000000000) {
+      past = new Date(dateInput * 1000);
+    } 
+    // Unix timestamp in milliseconds (e.g., 1704067200000)
+    else {
+      past = new Date(dateInput);
+    }
+  } else if (typeof dateInput === 'string') {
+    // ISO string or other date string
+    past = new Date(dateInput);
+  } else {
+    // Date object
+    past = dateInput;
+  }
 
-export interface Market {
-  id: number;
-  question: string;
-  imageUrl: string;
-  category: MarketCategory;
-  endTime: number;
-  totalYes: number;
-  totalNo: number;
-  resolved: boolean;
-  outcome: boolean;
-  cancelled: boolean;
-  creator: string;
-  betCount: number;
-}
+  // Validate the date
+  if (isNaN(past.getTime())) {
+    return 'Never';
+  }
 
-// ── Bet ───────────────────────────────────────────────────────────────────────
+  const msElapsed = now.getTime() - past.getTime();
+  
+  // Handle future dates
+  if (msElapsed < 0) {
+    return 'Just now';
+  }
+  
+  const seconds = Math.floor(msElapsed / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
 
-export interface Bet {
-  amount: number;
-  isYes: boolean;
-  claimed: boolean;
-}
-
-// ── Player Stats ──────────────────────────────────────────────────────────────
-
-export interface PlayerStats {
-  address: string;
-  displayName: string;
-  points: number;
-  totalBets: number;
-  wonBets: number;
-  lostBets: number;
-  winRate: number;
-}
-
-// ── Token Info ────────────────────────────────────────────────────────────────
-
-export interface TokenInfo {
-  name: string;
-  symbol: string;
-  decimals: number;
-  totalSupply: number;
-}
-
-// ── Referral Info ─────────────────────────────────────────────────────────────
-
-export interface ReferralInfo {
-  referrer: string | null;
-  displayName: string;
-  referralCount: number;
-  earnings: number;
-  isRegistered: boolean;
-}
-
-// ── Filters & Sorting ────────────────────────────────────────────────────────
-
-export type MarketFilter =
-  | "all"
-  | "active"
-  | "ending_soon"
-  | "ended"
-  | "resolved"
-  | "cancelled"
-  | "crypto"
-  | "sports"
-  | "politics"
-  | "entertainment"
-  | "science";
-
-export type MarketSort = "newest" | "volume" | "ending_soon" | "bettors";
-
-// ── Transaction Result ───────────────────────────────────────────────────────
-
-export interface TransactionResult {
-  success: boolean;
-  hash?: string;
-  error?: string;
-}
-
-// ── Errors ────────────────────────────────────────────────────────────────────
-
-export enum AppErrorType {
-  NETWORK = "NETWORK",
-  WALLET = "WALLET",
-  CONTRACT = "CONTRACT",
-  VALIDATION = "VALIDATION",
-  SIMULATION = "SIMULATION",
-  TIMEOUT = "TIMEOUT",
-}
-
-export interface AppError {
-  type: AppErrorType;
-  message: string;
-  details?: string;
-}
-
-// ── Wallet ────────────────────────────────────────────────────────────────────
-
-export type WalletType = "freighter" | "albedo" | "xbull";
-
-// ── Events ────────────────────────────────────────────────────────────────────
-
-export interface MarketEvent {
-  type:
-    | "bet_placed"
-    | "market_resolved"
-    | "market_cancelled"
-    | "reward_claimed"
-    | "fees_withdrawn";
-  user: string;
-  marketId: number;
-  amount?: number;
-  timestamp: number;
-  txHash: string;
+  if (seconds < 60) {
+    return 'Just now';
+  } else if (minutes < 60) {
+    return `${minutes}m ago`;
+  } else if (hours < 24) {
+    return `${hours}h ago`;
+  } else {
+    return `${days}d ago`;
+  }
 }
