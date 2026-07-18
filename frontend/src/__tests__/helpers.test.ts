@@ -4,6 +4,9 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  timestampToMilliseconds,
+  formatDate,
+  formatTime,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -168,6 +171,43 @@ describe("timeUntil", () => {
     const now = Math.floor(Date.now() / 1000);
     const future = now + 30;
     expect(timeUntil(future)).toBe("30s");
+  });
+});
+
+// ── timestamp formatting ─────────────────────────────────────────────────────
+
+describe("timestamp formatting", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("normalizes Unix seconds to milliseconds", () => {
+    expect(timestampToMilliseconds(1_705_320_000)).toBe(1_705_320_000_000);
+  });
+
+  it("keeps millisecond timestamps unchanged", () => {
+    expect(timestampToMilliseconds(1_705_320_000_000)).toBe(1_705_320_000_000);
+  });
+
+  it("formats dates with the viewer locale and timezone", () => {
+    const spy = vi.spyOn(Date.prototype, "toLocaleString");
+    formatDate(1_705_320_000);
+
+    expect(spy).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZoneName: "short",
+      })
+    );
+  });
+
+  it("formats times from milliseconds without multiplying twice", () => {
+    const seconds = 1_705_320_000;
+    const milliseconds = seconds * 1000;
+
+    expect(formatTime(milliseconds)).toBe(formatTime(seconds));
   });
 });
 

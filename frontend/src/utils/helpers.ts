@@ -74,16 +74,39 @@ export function timeUntil(timestamp: number): string {
   return `${seconds}s`;
 }
 
+const SECONDS_TIMESTAMP_LIMIT = 10_000_000_000;
+
 /**
- * Format a Unix timestamp to a locale-aware date string.
+ * Normalize Stellar timestamps that may arrive as Unix seconds or milliseconds.
+ */
+export function timestampToMilliseconds(timestamp: number): number {
+  return Math.abs(timestamp) < SECONDS_TIMESTAMP_LIMIT
+    ? timestamp * 1000
+    : timestamp;
+}
+
+/**
+ * Format a Unix timestamp to a viewer-locale date/time string.
  */
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+  return new Date(timestampToMilliseconds(timestamp)).toLocaleString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
+/**
+ * Format a Unix timestamp to a viewer-locale time string.
+ */
+export function formatTime(timestamp: number): string {
+  return new Date(timestampToMilliseconds(timestamp)).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
   });
 }
 
