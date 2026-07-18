@@ -9,6 +9,7 @@ import {
   bpsToPercent,
   explorerUrl,
 } from "@/utils/helpers";
+import { formatTimeAgo } from "@/utils/date";
 
 // ── formatXLM ─────────────────────────────────────────────────────────────────
 
@@ -274,5 +275,86 @@ describe("explorerUrl", () => {
     expect(explorerUrl("contract", "CDEF456")).toBe(
       "https://stellar.expert/explorer/public/contract/CDEF456"
     );
+  });
+});
+
+// ── formatTimeAgo ─────────────────────────────────────────────────────────────
+
+describe("formatTimeAgo", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    // Pin "now" to a known Unix time: 2026-02-26T00:00:00Z = 1771977600
+    vi.setSystemTime(new Date("2026-02-26T00:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('returns "Never" for null/undefined input', () => {
+    expect(formatTimeAgo(null)).toBe("Never");
+    expect(formatTimeAgo(undefined)).toBe("Never");
+    expect(formatTimeAgo("")).toBe("Never");
+  });
+
+  it('returns "Never" for invalid date strings', () => {
+    expect(formatTimeAgo("invalid-date")).toBe("Never");
+  });
+
+  it('returns "Just now" for very recent timestamps', () => {
+    const now = Date.now();
+    expect(formatTimeAgo(now - 30 * 1000)).toBe("Just now"); // 30 seconds ago
+    expect(formatTimeAgo(now - 45 * 1000)).toBe("Just now"); // 45 seconds ago
+  });
+
+  it('returns "Xm ago" for minutes', () => {
+    const now = Date.now();
+    expect(formatTimeAgo(now - 2 * 60 * 1000)).toBe("2m ago"); // 2 minutes ago
+    expect(formatTimeAgo(now - 30 * 60 * 1000)).toBe("30m ago"); // 30 minutes ago
+  });
+
+  it('returns "Xh ago" for hours', () => {
+    const now = Date.now();
+    expect(formatTimeAgo(now - 2 * 60 * 60 * 1000)).toBe("2h ago"); // 2 hours ago
+    expect(formatTimeAgo(now - 12 * 60 * 60 * 1000)).toBe("12h ago"); // 12 hours ago
+  });
+
+  it('returns "Xd ago" for days', () => {
+    const now = Date.now();
+    expect(formatTimeAgo(now - 2 * 24 * 60 * 60 * 1000)).toBe("2d ago"); // 2 days ago
+    expect(formatTimeAgo(now - 7 * 24 * 60 * 60 * 1000)).toBe("7d ago"); // 7 days ago
+  });
+
+  it('returns "Just now" for future dates', () => {
+    const now = Date.now();
+    expect(formatTimeAgo(now + 60 * 1000)).toBe("Just now"); // 1 minute in future
+  });
+
+  it("handles Unix timestamps in seconds", () => {
+    const now = Math.floor(Date.now() / 1000);
+    expect(formatTimeAgo(now - 300)).toBe("5m ago"); // 5 minutes ago in seconds
+  });
+
+  it("handles Unix timestamps in milliseconds", () => {
+    const now = Date.now();
+    expect(formatTimeAgo(now - 300 * 1000)).toBe("5m ago"); // 5 minutes ago in ms
+  });
+
+  it("handles ISO date strings", () => {
+    const now = new Date("2026-02-26T00:00:00Z");
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    expect(formatTimeAgo(fiveMinutesAgo.toISOString())).toBe("5m ago");
+  });
+
+  it("handles Date objects", () => {
+    const now = new Date("2026-02-26T00:00:00Z");
+    const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+    expect(formatTimeAgo(tenMinutesAgo)).toBe("10m ago");
+  });
+
+  it("normalizes timestamps to user's local timezone", () => {
+    // Test with a UTC timestamp - should work regardless of user's timezone
+    const utcTimestamp = new Date("2026-02-25T23:55:00Z").getTime();
+    expect(formatTimeAgo(utcTimestamp)).toBe("5m ago");
   });
 });
