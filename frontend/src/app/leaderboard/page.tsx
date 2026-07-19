@@ -29,7 +29,7 @@ export default function LeaderboardPage() {
           </span>
         </div>
         <p className="text-slate-400">
-          Rankings update in real-time from onchain data.
+          Rankings update in real-time from onchain data. Timestamps across the app use your local timezone.
         </p>
       </div>
 
