@@ -75,16 +75,42 @@ export function timeUntil(timestamp: number): string {
 }
 
 /**
- * Format a Unix timestamp to a locale-aware date string.
+ * Format a Unix timestamp to a locale-aware date+time string.
+ * Uses the browser's default locale (undefined) for user-localized display.
  */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", {
+export function formatTimestamp(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleString(undefined, {
     year: "numeric",
     month: "short",
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * Format a past Unix timestamp as a relative time string.
+ * Falls back to formatTimestamp for times > 7 days.
+ */
+export function formatRelativeTime(timestamp: number): string {
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - timestamp;
+
+  if (diff < 0) return formatTimestamp(timestamp);
+  if (diff < 60) return "just now";
+  if (diff < 3600) {
+    const m = Math.floor(diff / 60);
+    return `${m}m ago`;
+  }
+  if (diff < 86400) {
+    const h = Math.floor(diff / 3600);
+    return `${h}h ago`;
+  }
+  if (diff < 604800) {
+    const d = Math.floor(diff / 86400);
+    return `${d}d ago`;
+  }
+  return formatTimestamp(timestamp);
 }
 
 /**
