@@ -26,7 +26,6 @@ export function formatXLM(stroops: bigint): string {
  */
 export function displayXLM(xlm: number): string {
   if (xlm === 0) return "0 XLM";
-  // Show up to 2 decimal places, trim trailing zeros
   const formatted = xlm.toFixed(2).replace(/\.?0+$/, "");
   return `${formatted} XLM`;
 }
@@ -53,6 +52,29 @@ export function isValidAmount(amount: string, balance: number): boolean {
 }
 
 /**
+ * Format a date from a Unix timestamp using the user's locale.
+ * Example: 1712345678 → "Apr 5, 2025" (or localized equivalent)
+ */
+export function formatDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/**
+ * Format a time from a Unix timestamp (hours:minutes) using the user's locale.
+ * Example: 1712345678 → "3:45 PM" (US) or "15:45" (DE)
+ */
+export function formatTime(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
  * Return a human-readable "time until" string from a Unix timestamp.
  * Example: timestamp 2 days from now → "2d 14h 32m"
  */
@@ -74,70 +96,6 @@ export function timeUntil(timestamp: number): string {
   return `${seconds}s`;
 }
 
-/**
- * Format a Unix timestamp (seconds) to a locale-aware date+time string.
- */
-export function formatDate(timestamp: number): string {
-  if (!Number.isFinite(timestamp) || timestamp <= 0) return "—";
-  const ms = timestamp > 4_102_444_800 ? timestamp : timestamp * 1000;
-  return new Date(ms).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-/**
- * Format an event timestamp (milliseconds) to a locale-aware date+time string.
- * Use this for `MarketEvent.timestamp` – it is already in milliseconds.
- */
-export function formatEventTime(timestampMs: number): string {
-  if (!Number.isFinite(timestampMs) || timestampMs <= 0) return "—";
-  return new Date(timestampMs).toLocaleString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-/**
- * Return a human-readable relative time string from a Unix timestamp (seconds).
- * Example: "2 hours ago", "just now"
- */
-export function timeAgo(timestampSec: number): string {
-  if (!Number.isFinite(timestampSec) || timestampSec <= 0) return "—";
-  const ms = timestampSec > 4_102_444_800 ? timestampSec : timestampSec * 1000;
-  const diffSeconds = Math.floor((Date.now() - ms) / 1000);
-  if (diffSeconds < 5) return "just now";
-  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
-  const intervals: [Intl.RelativeTimeFormatUnit, number][] = [
-    ["year", 31_536_000],
-    ["month", 2_592_000],
-    ["day", 86_400],
-    ["hour", 3_600],
-    ["minute", 60],
-    ["second", 1],
-  ];
-  for (const [unit, secondsInUnit] of intervals) {
-    if (Math.abs(diffSeconds) >= secondsInUnit || unit === "second") {
-      const value = Math.round(diffSeconds / secondsInUnit);
-      return rtf.format(value, unit);
-    }
-  }
-  return rtf.format(0, "second");
-}
-
-/**
- * Calculate a winner's payout from a prediction market.
- *
- * payout = (userNetBet / winningSideTotal) × totalPool
- *
- * All values in XLM (not stroops).
- */
 export function calculatePayout(
   userNetBet: number,
   winningSideTotal: number,
@@ -152,43 +110,13 @@ export function calculatePayout(
  * Returns { yesPercent, noPercent } — each 0-100.
  */
 export function calculateOdds(
-  totalYes: number,
-  totalNo: number
+  yesTotal: number,
+  noTotal: number
 ): { yesPercent: number; noPercent: number } {
-  const total = totalYes + totalNo;
-  if (total <= 0) return { yesPercent: 50, noPercent: 50 };
-
-  const yesPercent = Math.round((totalYes / total) * 100);
-  return { yesPercent, noPercent: 100 - yesPercent };
-}
-
-/**
- * Convert basis points to a percentage string.
- * Example: 200 → "2%", 150 → "1.5%"
- */
-export function bpsToPercent(bps: number): string {
-  const pct = bps / 100;
-  return pct % 1 === 0 ? `${pct}%` : `${pct}%`;
-}
-
-/**
- * Build a Stellar Expert explorer URL.
- * Defaults to "public" (mainnet). Pass "testnet" for testnet links.
- */
-export function explorerUrl(
-  type: "tx" | "account" | "contract",
-  id: string,
-  network: "public" | "testnet" = "public"
-): string {
-  const base = `https://stellar.expert/explorer/${network}`;
-  switch (type) {
-    case "tx":
-      return `${base}/tx/${id}`;
-    case "account":
-      return `${base}/account/${id}`;
-    case "contract":
-      return `${base}/contract/${id}`;
-    default:
-      return `${base}`;
-  }
+  const total = yesTotal + noTotal;
+  if (total === 0) return { yesPercent: 50, noPercent: 50 };
+  return {
+    yesPercent: Math.round((yesTotal / total) * 100),
+    noPercent: Math.round((noTotal / total) * 100),
+  };
 }
