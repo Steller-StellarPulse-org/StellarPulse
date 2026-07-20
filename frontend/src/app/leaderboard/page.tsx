@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLeaderboard, type LeaderboardTab } from "@/hooks/useLeaderboard";
 import { useWallet } from "@/hooks/useWallet";
 import LeaderboardTabs from "@/components/leaderboard/LeaderboardTabs";
@@ -10,11 +10,27 @@ import EmptyState from "@/components/ui/EmptyState";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { formatDate } from "@/utils/helpers";
 import { FiAward } from "react-icons/fi";
+import { timeAgo } from "@/utils/helpers";
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<LeaderboardTab>("top_predictors");
   const { data: players, loading, error, lastUpdated } = useLeaderboard(tab);
   const { publicKey } = useWallet();
+  const [lastUpdated, setLastUpdated] = useState<number>(
+    Math.floor(Date.now() / 1000)
+  );
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setLastUpdated(Math.floor(Date.now() / 1000));
+    }
+  }, [loading, tab]);
+
+  useEffect(() => {
+    const id = setInterval(() => forceUpdate((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
@@ -29,14 +45,6 @@ export default function LeaderboardPage() {
             Live
           </span>
         </div>
-        <p className="text-slate-400">
-          Rankings update in real-time from onchain data.
-        </p>
-        {lastUpdated !== null && (
-          <p className="mt-1 text-xs text-slate-500">
-            Last updated: {formatDate(lastUpdated)}
-          </p>
-        )}
       </div>
 
       {/* Tabs */}
