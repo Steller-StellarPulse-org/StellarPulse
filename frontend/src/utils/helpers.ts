@@ -96,13 +96,6 @@ export function timeUntil(timestamp: number): string {
   return `${seconds}s`;
 }
 
-/**
- * Calculate a winner's payout from a prediction market.
- *
- * payout = (userNetBet / winningSideTotal) × totalPool
- *
- * All values in XLM (not stroops).
- */
 export function calculatePayout(
   userNetBet: number,
   winningSideTotal: number,
