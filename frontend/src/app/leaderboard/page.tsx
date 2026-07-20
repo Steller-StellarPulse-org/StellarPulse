@@ -8,12 +8,13 @@ import LeaderboardTable from "@/components/leaderboard/LeaderboardTable";
 import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
+import { formatDate } from "@/utils/helpers";
 import { FiAward } from "react-icons/fi";
 import { timeAgo } from "@/utils/helpers";
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<LeaderboardTab>("top_predictors");
-  const { data: players, loading, error } = useLeaderboard(tab);
+  const { data: players, loading, error, lastUpdated } = useLeaderboard(tab);
   const { publicKey } = useWallet();
   const [lastUpdated, setLastUpdated] = useState<number>(
     Math.floor(Date.now() / 1000)
@@ -43,16 +44,6 @@ export default function LeaderboardPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-accent-mint animate-pulse" />
             Live
           </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <p className="text-slate-400">
-            Rankings update in real-time from onchain data.
-          </p>
-          {!loading && (
-            <p className="text-xs text-slate-500">
-              Updated {timeAgo(lastUpdated)}
-            </p>
-          )}
         </div>
       </div>
 

@@ -95,7 +95,6 @@ export function timeUntil(timestamp: number): string {
   const seconds = diff;
   return `${seconds}s`;
 }
-
 export function calculatePayout(
   userNetBet: number,
   winningSideTotal: number,
