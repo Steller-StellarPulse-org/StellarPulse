@@ -89,6 +89,11 @@ export function formatTime(
     ...(timeZone ? { timeZone } : {}),
   }).format(new Date(timestamp * 1000));
 /**
+ * Format a Unix timestamp to a locale-aware date string.
+ * Uses the user's locale and timezone for consistent display across views.
+ */
+export function formatDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleString(undefined, {
  * Format a Unix timestamp (seconds) to a locale-aware date/time string.
  *
  * Uses the viewer's browser locale and local timezone automatically — no
@@ -133,6 +138,19 @@ export function formatEventTime(timestampMs: number): string {
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
+/**
+ * Format a Unix timestamp to a locale-aware time-only string.
+ * Uses the user's locale and timezone for consistent display across views.
+ */
+export function formatTime(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
   });
 }
 

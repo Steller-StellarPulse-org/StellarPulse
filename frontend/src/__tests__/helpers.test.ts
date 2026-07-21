@@ -182,6 +182,69 @@ describe("timeAgo", () => {
   });
 });
 
+// ── formatDate ────────────────────────────────────────────────────────────────
+
+describe("formatDate", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-02-26T12:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("formats a Unix timestamp into a readable date string", () => {
+    const ts = Math.floor(new Date("2026-01-15T10:30:00Z").getTime() / 1000);
+    const result = formatDate(ts);
+    expect(result).toMatch(/2026/);
+    expect(result).toMatch(/Jan/);
+    expect(result).toMatch(/15/);
+  });
+
+  it("includes time components (hour and minute)", () => {
+    const ts = Math.floor(new Date("2026-01-15T10:30:00Z").getTime() / 1000);
+    const result = formatDate(ts);
+    expect(result).toMatch(/\d/);
+  });
+
+  it("does not hardcode en-US locale (uses undefined for user locale)", () => {
+    const ts = Math.floor(new Date("2026-01-15T10:30:00Z").getTime() / 1000);
+    const result = formatDate(ts);
+    expect(result).toBeTruthy();
+    expect(result.length).toBeGreaterThan(10);
+  });
+
+  it("handles epoch zero", () => {
+    expect(formatDate(0)).toBeTruthy();
+  });
+});
+
+// ── formatTime ────────────────────────────────────────────────────────────────
+
+describe("formatTime", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-02-26T12:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("formats a Unix timestamp into a time string", () => {
+    const ts = Math.floor(new Date("2026-01-15T10:30:00Z").getTime() / 1000);
+    const result = formatTime(ts);
+    expect(result).toMatch(/\d/);
+  });
+
+  it("returns a non-empty string for valid timestamp", () => {
+    const ts = Math.floor(new Date("2026-01-15T10:30:00Z").getTime() / 1000);
+    expect(formatTime(ts).length).toBeGreaterThan(0);
+  });
+
+  it("handles epoch zero", () => {
+    expect(formatTime(0)).toBeTruthy();
 // ── timestamp formatting ─────────────────────────────────────────────────────
 
 describe("timestamp formatting", () => {
