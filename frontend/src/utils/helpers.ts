@@ -116,6 +116,48 @@ export function formatDate(timestamp: number, locale?: string): string {
 }
 
 /**
+ * Shared date/time options keep timestamp display consistent while letting the
+ * browser choose the user's locale and time zone by default.
+ */
+const DATE_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+};
+
+const TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  hour: "2-digit",
+  minute: "2-digit",
+};
+
+/**
+ * Format a Unix timestamp to the user's locale and time zone.
+ */
+export function formatDate(
+  timestamp: number,
+  locale?: Intl.LocalesArgument,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    ...DATE_TIME_OPTIONS,
+    ...options,
+  }).format(new Date(timestamp * 1000));
+}
+
+/**
+ * Format a Unix timestamp to a compact user-local time.
+ */
+export function formatTime(
+  timestamp: number,
+  locale?: Intl.LocalesArgument,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    ...TIME_OPTIONS,
+    ...options,
+  }).format(new Date(timestamp * 1000));
  * Format time-of-day only, using the viewer's locale + timezone.
  */
 export function formatTime(timestamp: number, locale?: string): string {
