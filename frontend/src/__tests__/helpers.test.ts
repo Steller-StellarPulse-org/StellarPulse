@@ -10,7 +10,6 @@ import {
   calculateOdds,
   bpsToPercent,
   explorerUrl,
-  formatDate,
   formatEventTime,
   timeAgo,
 } from "@/utils/helpers";
