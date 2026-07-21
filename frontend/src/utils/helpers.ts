@@ -51,27 +51,20 @@ export function timeUntil(timestamp: number): string {
 function isValidTimestamp(timestamp: number): boolean {
   return Number.isFinite(timestamp) && timestamp > 0;
 }
-
-function formatTimestamp(
-  timestamp: number,
-  locale: Intl.LocalesArgument,
-  options: Intl.DateTimeFormatOptions
-): string {
-  if (!isValidTimestamp(timestamp)) return DASH;
-  return new Intl.DateTimeFormat(locale, options).format(
-    new Date(timestamp * 1000)
-  );
-}
-
-export function formatDateTime(
-  timestamp: number,
-  locale?: Intl.LocalesArgument,
-  options: Intl.DateTimeFormatOptions = {}
-): string {
-  return formatTimestamp(timestamp, locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
+/**
+ * Format a Unix timestamp to a viewer-locale time string.
+ */
+export function formatTime(timestamp: number): string {
+  return new Date(timestampToMilliseconds(timestamp)).toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",
     timeZoneName: "short",
