@@ -31,7 +31,6 @@ export function isValidAmount(amount: string, balance: number): boolean {
   if (isNaN(parsed) || parsed < 1) return false;
   return parsed <= balance;
 }
-
 export function timeUntil(timestamp: number): string {
   const now = Math.floor(Date.now() / 1000);
   const diff = timestamp - now;
@@ -124,14 +123,8 @@ export function calculateOdds(
 ): { yesPercent: number; noPercent: number } {
   const total = yesTotal + noTotal;
   if (total === 0) return { yesPercent: 50, noPercent: 50 };
-
   const yesPercent = Math.round((yesTotal / total) * 100);
   return { yesPercent, noPercent: 100 - yesPercent };
-}
-
-export function bpsToPercent(bps: number): string {
-  const pct = bps / 100;
-  return pct % 1 === 0 ? `${pct}%` : `${pct}%`;
 }
 
 export function explorerUrl(
@@ -139,29 +132,6 @@ export function explorerUrl(
   id: string,
   network: "public" | "testnet" = "public"
 ): string {
-  const base = `https://stellar.expert/explorer/${network}`;
-  return `${base}/${type}/${id}`;
-}
-
-export function formatEventTime(timestampMs: number): string {
-  if (!Number.isFinite(timestampMs) || timestampMs <= 0) return DASH;
-  return new Intl.DateTimeFormat(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(timestampMs));
-}
-
-export function timeAgo(timestamp: number): string {
-  if (!isValidTimestamp(timestamp)) return DASH;
-
-  const diff = Math.max(0, Math.floor(Date.now() / 1000) - timestamp);
-  if (diff < 5) return "just now";
-  if (diff < 60) return `${diff}s ago`;
-
-  const minutes = Math.floor(diff / 60);
   if (minutes < 60) return `${minutes}m ago`;
 
   const hours = Math.floor(minutes / 60);
