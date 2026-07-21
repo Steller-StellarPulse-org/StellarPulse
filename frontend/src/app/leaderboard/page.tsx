@@ -9,10 +9,11 @@ import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { FiAward } from "react-icons/fi";
+import { formatDate } from "@/utils/helpers";
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<LeaderboardTab>("top_predictors");
-  const { data: players, loading, error } = useLeaderboard(tab);
+  const { data: players, loading, error, lastUpdated } = useLeaderboard(tab);
   const { publicKey } = useWallet();
 
   return (
@@ -28,9 +29,6 @@ export default function LeaderboardPage() {
             Live
           </span>
         </div>
-        <p className="text-slate-400">
-          Rankings update in real-time from onchain data.
-        </p>
       </div>
 
       {/* Tabs */}
@@ -40,6 +38,12 @@ export default function LeaderboardPage() {
           onTabChange={(t) => setTab(t as LeaderboardTab)}
         />
       </div>
+
+      {lastUpdated && (
+        <div className="mb-3 text-right text-xs text-slate-500">
+          Last updated: {formatDate(lastUpdated)}
+        </div>
+      )}
 
       {/* Content */}
       <ErrorBoundary fallbackTitle="Leaderboard failed to load">
