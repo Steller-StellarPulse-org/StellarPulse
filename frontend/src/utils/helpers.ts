@@ -89,6 +89,41 @@ export function formatTime(
     ...(timeZone ? { timeZone } : {}),
   }).format(new Date(timestamp * 1000));
 /**
+ * Normalize a Unix timestamp that may be seconds or milliseconds to ms.
+ * Event feeds currently emit ms (Date#getTime); some contract fields use seconds.
+ */
+export function toTimestampMs(timestamp: number): number {
+  if (!Number.isFinite(timestamp)) return Date.now();
+  // Values below ~1e12 are almost certainly seconds (year ~2001 in ms would be ~1e12).
+  return timestamp < 1e12 ? timestamp * 1000 : timestamp;
+}
+
+const DATE_TIME_OPTS: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  timeZoneName: "short",
+};
+
+/**
+ * Format a Unix timestamp (seconds or ms) to the viewer's locale + timezone.
+ */
+export function formatDate(timestamp: number, locale?: string): string {
+  const d = new Date(toTimestampMs(timestamp));
+  return d.toLocaleString(locale, DATE_TIME_OPTS);
+}
+
+/**
+ * Format time-of-day only, using the viewer's locale + timezone.
+ */
+export function formatTime(timestamp: number, locale?: string): string {
+  const d = new Date(toTimestampMs(timestamp));
+  return d.toLocaleTimeString(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
  * Format a Unix timestamp to a locale-aware date string.
  * Uses the user's locale and timezone for consistent display across views.
  */

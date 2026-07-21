@@ -52,7 +52,7 @@ export default function LeaderboardPage() {
 
       <div className="flex items-center justify-between mb-4">
         <p className="text-slate-400">
-          Rankings update in real-time from onchain data.
+          Rankings update in real-time from onchain data. Timestamps across the app use your local timezone.
         </p>
         {!loading && (
           <p className="text-xs text-slate-500">

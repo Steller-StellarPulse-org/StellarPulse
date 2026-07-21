@@ -43,6 +43,10 @@ import {
   calculatePayout,
   calculateOdds,
   bpsToPercent,
+  explorerUrl,,
+  formatDate,
+  formatTime,
+  toTimestampMs} from "@/utils/helpers";
   explorerUrl,
   formatDate,
   formatEventTime,
@@ -474,5 +478,38 @@ describe("timeAgo", () => {
   it("returns an em dash for invalid input", () => {
     expect(timeAgo(0)).toBe("—");
     expect(timeAgo(NaN)).toBe("—");
+  });
+});
+
+
+// ── formatDate / formatTime / toTimestampMs ───────────────────────────────────
+
+describe("toTimestampMs", () => {
+  it("treats second-precision values as seconds", () => {
+    expect(toTimestampMs(1_700_000_000)).toBe(1_700_000_000_000);
+  });
+
+  it("leaves millisecond values unchanged", () => {
+    expect(toTimestampMs(1_700_000_000_000)).toBe(1_700_000_000_000);
+  });
+});
+
+describe("formatDate", () => {
+  it("formats second timestamps without year corruption", () => {
+    const s = formatDate(1_700_000_000, "en-US");
+    expect(s).toMatch(/2023/);
+    expect(s).not.toMatch(/5\d{4}/);
+  });
+
+  it("formats millisecond event timestamps the same way", () => {
+    const s = formatDate(1_700_000_000_000, "en-US");
+    expect(s).toMatch(/2023/);
+  });
+});
+
+describe("formatTime", () => {
+  it("returns a locale time string with timezone abbreviation", () => {
+    const s = formatTime(1_700_000_000_000, "en-US");
+    expect(s.length).toBeGreaterThan(3);
   });
 });
