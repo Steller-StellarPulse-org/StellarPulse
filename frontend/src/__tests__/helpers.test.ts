@@ -44,6 +44,7 @@ import {
   calculateOdds,
   bpsToPercent,
   explorerUrl,
+  formatDate,
   formatEventTime,
   timeAgo,
 } from "@/utils/helpers";
@@ -359,6 +360,54 @@ describe("timeAgo", () => {
     expect(result).toMatch(/\d/);
   });
 
+  it("returns an em dash for invalid input", () => {
+    expect(timeAgo(0)).toBe("—");
+    expect(timeAgo(NaN)).toBe("—");
+  });
+});
+
+// ── formatDate ────────────────────────────────────────────────────────────────
+
+describe("formatDate", () => {
+  it("formats a valid timestamp", () => {
+    const result = formatDate(1771977600);
+    expect(result).toContain("2026");
+  });
+});
+
+// ── formatEventTime ───────────────────────────────────────────────────────────
+
+describe("formatEventTime", () => {
+  it("renders a millisecond timestamp correctly", () => {
+    const ms = 1720872000000; // 2026-07-13T12:00:00Z (example)
+    const result = formatEventTime(ms);
+    expect(result).toContain("2026");
+  });
+  it("returns an em dash for invalid input", () => {
+    expect(formatEventTime(0)).toBe("—");
+    expect(formatEventTime(NaN)).toBe("—");
+    expect(formatEventTime(-1)).toBe("—");
+  });
+});
+
+// ── timeAgo ────────────────────────────────────────────────────────────────────
+
+describe("timeAgo", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-13T12:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+  it("returns 'just now' for a timestamp within 5 seconds", () => {
+    const now = Math.floor(Date.now() / 1000);
+    expect(timeAgo(now - 2)).toBe("just now");
+  });
+  it("returns a relative string like '5 minutes ago'", () => {
+    const now = Math.floor(Date.now() / 1000);
+    expect(timeAgo(now - 5 * 60)).toMatch(/5.*minute/);
+  });
   it("returns an em dash for invalid input", () => {
     expect(timeAgo(0)).toBe("—");
     expect(timeAgo(NaN)).toBe("—");

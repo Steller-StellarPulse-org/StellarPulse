@@ -99,6 +99,10 @@ export function formatTime(
  * Example (en-US, America/New_York): "Jul 12, 2026, 10:30 AM"
  */
 export function formatDate(timestamp: number): string {
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return "—";
+  // Guard against accidental millisecond values (if timestamp > year 2100 in seconds)
+  const ms = timestamp > 4_102_444_800 ? timestamp : timestamp * 1000;
+  return new Date(ms).toLocaleString(undefined, {
   return new Date(timestamp * 1000).toLocaleDateString(undefined, {
   // Soroban ledger timestamps are Unix seconds. Guard against accidental
   // millisecond values (> year 2100 in seconds ≈ 4_102_444_800).
@@ -118,6 +122,46 @@ function isValidTimestamp(timestamp: number): boolean {
 }
 
 /**
+ * Format an event timestamp (milliseconds) to a locale-aware date+time string.
+ * Use this for `MarketEvent.timestamp` – it is already in milliseconds, do NOT multiply by 1000.
+ */
+export function formatEventTime(timestampMs: number): string {
+  if (!Number.isFinite(timestampMs) || timestampMs <= 0) return "—";
+  return new Date(timestampMs).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
+ * Return a human-readable relative time string from a Unix timestamp (seconds).
+ * Example: "2 hours ago", "just now"
+ */
+export function timeAgo(timestampSec: number): string {
+  if (!Number.isFinite(timestampSec) || timestampSec <= 0) return "—";
+  // Guard against millisecond values
+  const ms = timestampSec > 4_102_444_800 ? timestampSec : timestampSec * 1000;
+  const diffSeconds = Math.floor((Date.now() - ms) / 1000);
+  if (diffSeconds < 5) return "just now";
+  const rtf = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+  const intervals: [Intl.RelativeTimeFormatUnit, number][] = [
+    ["year", 31_536_000],
+    ["month", 2_592_000],
+    ["day", 86_400],
+    ["hour", 3_600],
+    ["minute", 60],
+    ["second", 1],
+  ];
+  for (const [unit, secondsInUnit] of intervals) {
+    if (Math.abs(diffSeconds) >= secondsInUnit || unit === "second") {
+      const value = Math.round(diffSeconds / secondsInUnit);
+      return rtf.format(value, unit);
+    }
+  }
+  return rtf.format(0, "second");
  * Return a human-readable relative time string from a Unix timestamp (seconds).
  * Automatically uses the viewer's locale via Intl.RelativeTimeFormat.
  *
