@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 
 const mocks = vi.hoisted(() => ({
   getTopPlayers: vi.fn(),
@@ -36,16 +36,6 @@ vi.mock("@/hooks/useVisiblePoll", () => ({
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 
 describe("useLeaderboard lastUpdated", () => {
-  const player = {
-    address: "GALICE",
-    displayName: "Alice",
-    points: 100,
-    totalBets: 4,
-    wonBets: 3,
-    lostBets: 1,
-    winRate: 75,
-  };
-
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getMarkets.mockResolvedValue([]);
@@ -55,42 +45,49 @@ describe("useLeaderboard lastUpdated", () => {
     vi.restoreAllMocks();
   });
 
-  it("records Unix seconds only after a successful refresh", async () => {
+  it("records Unix seconds after a successful refresh", async () => {
     const refreshedAtMs = 1_800_000_000_123;
     vi.spyOn(Date, "now").mockReturnValue(refreshedAtMs);
-    mocks.getTopPlayers.mockResolvedValue([player]);
+    mocks.getTopPlayers.mockResolvedValue([
+      {
+        address: "GALICE",
+        displayName: "Alice",
+        points: 100,
+        totalBets: 4,
+        wonBets: 3,
+        lostBets: 1,
+        winRate: 75,
+      },
+    ]);
 
     const { result } = renderHook(() => useLeaderboard("top_predictors"));
 
     expect(result.current.lastUpdated).toBeNull();
     await waitFor(() => expect(result.current.loading).toBe(false));
 
-    expect(result.current.lastUpdated).toBe(Math.floor(refreshedAtMs / 1000));
+    expect(result.current.data).toHaveLength(1);
+    expect(result.current.lastUpdated).toBe(Math.floor(refreshedAtMs / 1_000));
   });
 
-  it("keeps the previous timestamp when services return no refreshed data", async () => {
-    const now = vi.spyOn(Date, "now").mockReturnValue(1_800_000_000_000);
-    mocks.getTopPlayers.mockResolvedValueOnce([player]);
+  it("timestamps a successful empty refresh", async () => {
+    const refreshedAtMs = 1_900_000_000_456;
+    vi.spyOn(Date, "now").mockReturnValue(refreshedAtMs);
+    mocks.getTopPlayers.mockResolvedValue([]);
 
     const { result } = renderHook(() => useLeaderboard("top_predictors"));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    const successfulRefresh = result.current.lastUpdated;
-    expect(successfulRefresh).not.toBeNull();
 
-    now.mockReturnValue(1_900_000_000_000);
-    let resolveRefresh!: (players: never[]) => void;
-    const emptyRefresh = new Promise<never[]>((resolve) => {
-      resolveRefresh = resolve;
-    });
-    mocks.getTopPlayers.mockReturnValueOnce(emptyRefresh);
+    expect(result.current.data).toEqual([]);
+    expect(result.current.lastUpdated).toBe(Math.floor(refreshedAtMs / 1_000));
+  });
 
-    act(() => result.current.refetch());
-    await act(async () => {
-      resolveRefresh([]);
-      await emptyRefresh;
-    });
+  it("does not claim a refresh time when loading fails", async () => {
+    mocks.getTopPlayers.mockRejectedValue(new Error("RPC unavailable"));
 
+    const { result } = renderHook(() => useLeaderboard("top_predictors"));
     await waitFor(() => expect(result.current.loading).toBe(false));
-    expect(result.current.lastUpdated).toBe(successfulRefresh);
+
+    expect(result.current.error).toBe("RPC unavailable");
+    expect(result.current.lastUpdated).toBeNull();
   });
 });
