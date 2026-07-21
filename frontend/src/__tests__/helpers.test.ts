@@ -4,6 +4,8 @@ import {
   truncateAddress,
   isValidAmount,
   timeUntil,
+  formatDate,
+  formatTime,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
@@ -171,6 +173,49 @@ describe("timeUntil", () => {
     const now = Math.floor(Date.now() / 1000);
     const future = now + 30;
     expect(timeUntil(future)).toBe("30s");
+  });
+});
+
+// ── timestamp formatting ─────────────────────────────────────────────────────
+
+describe("timestamp formatting", () => {
+  const timestamp = Date.UTC(2026, 6, 18, 8, 30) / 1000;
+
+  it("formats a complete timestamp in the requested locale and time zone", () => {
+    const expected = new Intl.DateTimeFormat("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+      timeZone: "Asia/Singapore",
+    }).format(new Date(timestamp * 1000));
+
+    expect(
+      formatDate(timestamp, "en-GB", { timeZone: "Asia/Singapore" })
+    ).toBe(expected);
+  });
+
+  it("uses the requested locale instead of hard-coding en-US", () => {
+    const options = { timeZone: "UTC" };
+
+    expect(formatDate(timestamp, "de-DE", options)).not.toBe(
+      formatDate(timestamp, "en-US", options)
+    );
+  });
+
+  it("uses the same local-time rules for compact activity timestamps", () => {
+    const expected = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+      timeZone: "America/New_York",
+    }).format(new Date(timestamp * 1000));
+
+    expect(
+      formatTime(timestamp, "en-US", { timeZone: "America/New_York" })
+    ).toBe(expected);
   });
 });
 
