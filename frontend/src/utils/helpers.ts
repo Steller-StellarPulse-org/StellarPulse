@@ -2,6 +2,7 @@
 
 const STROOPS_PER_XLM = 10_000_000n;
 const MILLISECOND_TIMESTAMP_THRESHOLD = 100_000_000_000;
+const MAX_DATE_TIMESTAMP_MS = 8_640_000_000_000_000;
 const INVALID_TIMESTAMP = "—";
 
 /** Convert stroops (bigint) to a human-readable XLM string. */
@@ -58,9 +59,11 @@ export function timeUntil(timestamp: number): string {
 /** Normalize a positive Unix timestamp supplied in seconds or milliseconds. */
 export function toTimestampMs(timestamp: number): number {
   if (!Number.isFinite(timestamp) || timestamp <= 0) return Number.NaN;
-  return Math.abs(timestamp) < MILLISECOND_TIMESTAMP_THRESHOLD
-    ? timestamp * 1_000
-    : timestamp;
+  const timestampMs =
+    timestamp < MILLISECOND_TIMESTAMP_THRESHOLD
+      ? timestamp * 1_000
+      : timestamp;
+  return timestampMs <= MAX_DATE_TIMESTAMP_MS ? timestampMs : Number.NaN;
 }
 
 /** Format a timestamp in the viewer's timezone, including its timezone label. */
@@ -124,8 +127,10 @@ export function timeAgo(
   const [unit, unitSeconds] =
     units.find(([, seconds]) => absoluteSeconds >= seconds) ?? units[6];
 
+  const value =
+    Math.sign(diffSeconds) * Math.round(absoluteSeconds / unitSeconds);
   return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(
-    Math.round(diffSeconds / unitSeconds),
+    value,
     unit
   );
 }
