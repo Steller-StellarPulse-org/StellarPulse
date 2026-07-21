@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLeaderboard, type LeaderboardTab } from "@/hooks/useLeaderboard";
 import { useWallet } from "@/hooks/useWallet";
 import LeaderboardTabs from "@/components/leaderboard/LeaderboardTabs";
@@ -9,12 +9,30 @@ import Skeleton from "@/components/ui/Skeleton";
 import EmptyState from "@/components/ui/EmptyState";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { FiAward } from "react-icons/fi";
+import { timeAgo } from "@/utils/helpers";
 import { formatDate } from "@/utils/helpers";
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<LeaderboardTab>("top_predictors");
   const { data: players, loading, error, lastUpdated } = useLeaderboard(tab);
   const { publicKey } = useWallet();
+  const [lastUpdated, setLastUpdated] = useState<number>(
+    Math.floor(Date.now() / 1000)
+  );
+  const [, forceUpdate] = useState(0);
+
+  // Record when data last loaded
+  useEffect(() => {
+    if (!loading) {
+      setLastUpdated(Math.floor(Date.now() / 1000));
+    }
+  }, [loading, tab]);
+
+  // Re-render every 30s so the "X ago" string stays fresh
+  useEffect(() => {
+    const id = setInterval(() => forceUpdate((n) => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
@@ -28,6 +46,16 @@ export default function LeaderboardPage() {
             <span className="w-1.5 h-1.5 rounded-full bg-accent-mint animate-pulse" />
             Live
           </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-slate-400">
+            Rankings update in real-time from onchain data.
+          </p>
+          {!loading && (
+            <p className="text-xs text-slate-500">
+              Updated {timeAgo(lastUpdated)}
+            </p>
+          )}
         </div>
       </div>
 
@@ -81,4 +109,3 @@ export default function LeaderboardPage() {
     </div>
   );
 }
-

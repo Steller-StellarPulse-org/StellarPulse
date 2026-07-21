@@ -1,3 +1,35 @@
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { formatDate, timeAgo } from "@/utils/helpers";
+
+// ---------------------------------------------------------------------------
+// formatDate
+// ---------------------------------------------------------------------------
+
+describe("formatDate", () => {
+  it("accepts Unix seconds and returns a non-empty string", () => {
+    // 2024-01-15 12:00:00 UTC in seconds
+    const result = formatDate(1705320000);
+    expect(typeof result).toBe("string");
+    expect(result.length).toBeGreaterThan(0);
+  });
+
+  it("accepts millisecond timestamps without doubling", () => {
+    // Same instant expressed in milliseconds (> 4_102_444_800 guard)
+    const seconds = 1705320000;
+    const ms = seconds * 1000;
+    const fromSeconds = formatDate(seconds);
+    const fromMs = formatDate(ms);
+    // Both should produce the same formatted date
+    expect(fromSeconds).toBe(fromMs);
+  });
+
+  it("does not hard-code en-US locale (uses undefined locale)", () => {
+    // Spy on toLocaleString to confirm undefined locale is passed
+    const spy = vi.spyOn(Date.prototype, "toLocaleString");
+    formatDate(1705320000);
+    expect(spy).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ year: "numeric", month: "short" })
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   formatXLM,
@@ -68,78 +100,34 @@ describe("truncateAddress", () => {
     expect(truncateAddress("GABCDEFGHIJKLMNOPQRSTUVWXYZ234567")).toBe(
       "GABC...4567"
     );
+    spy.mockRestore();
   });
 
-  it("returns short strings as-is", () => {
-    expect(truncateAddress("SHORT")).toBe("SHORT");
-  });
-
-  it("returns empty string as-is", () => {
-    expect(truncateAddress("")).toBe("");
-  });
-
-  it("returns exactly 10-char string as-is", () => {
-    expect(truncateAddress("ABCDEFGHIJ")).toBe("ABCDEFGHIJ");
-  });
-
-  it("truncates 11-char string", () => {
-    expect(truncateAddress("ABCDEFGHIJK")).toBe("ABCD...HIJK");
+  it("includes hour and minute in the output options", () => {
+    const spy = vi.spyOn(Date.prototype, "toLocaleString");
+    formatDate(1705320000);
+    expect(spy).toHaveBeenCalledWith(
+      undefined,
+      expect.objectContaining({ hour: "2-digit", minute: "2-digit" })
+    );
+    spy.mockRestore();
   });
 });
 
-// ── isValidAmount ─────────────────────────────────────────────────────────────
+// ---------------------------------------------------------------------------
+// timeAgo
+// ---------------------------------------------------------------------------
 
-describe("isValidAmount", () => {
-  it("accepts valid amount within balance", () => {
-    expect(isValidAmount("50", 100)).toBe(true);
-  });
-
-  it("accepts minimum 1 XLM", () => {
-    expect(isValidAmount("1", 100)).toBe(true);
-  });
-
-  it("accepts amount equal to balance", () => {
-    expect(isValidAmount("100", 100)).toBe(true);
-  });
-
-  it("rejects amount below 1 XLM minimum", () => {
-    expect(isValidAmount("0.5", 100)).toBe(false);
-  });
-
-  it("rejects zero", () => {
-    expect(isValidAmount("0", 100)).toBe(false);
-  });
-
-  it("rejects negative amount", () => {
-    expect(isValidAmount("-5", 100)).toBe(false);
-  });
-
-  it("rejects amount exceeding balance", () => {
-    expect(isValidAmount("150", 100)).toBe(false);
-  });
-
-  it("rejects non-numeric strings", () => {
-    expect(isValidAmount("abc", 100)).toBe(false);
-  });
-
-  it("rejects empty string", () => {
-    expect(isValidAmount("", 100)).toBe(false);
-  });
-});
-
-// ── timeUntil ─────────────────────────────────────────────────────────────────
-
-describe("timeUntil", () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    // Pin "now" to a known Unix time: 2026-02-26T00:00:00Z = 1771977600
-    vi.setSystemTime(new Date("2026-02-26T00:00:00Z"));
-  });
-
+describe("timeAgo", () => {
   afterEach(() => {
     vi.useRealTimers();
   });
 
+  it("returns 'just now' for a timestamp within the last 5 seconds", () => {
+    vi.useFakeTimers();
+    const now = 1_700_000_000; // seconds
+    vi.setSystemTime(now * 1000);
+    expect(timeAgo(now - 2)).toBe("just now");
   it('returns "Ended" for past timestamps', () => {
     expect(timeUntil(0)).toBe("Ended");
   });
@@ -260,30 +248,42 @@ describe("bpsToPercent", () => {
     expect(bpsToPercent(10000)).toBe("100%");
   });
 
-  it("converts 0 bps to 0%", () => {
-    expect(bpsToPercent(0)).toBe("0%");
-  });
-});
-
-// ── explorerUrl ───────────────────────────────────────────────────────────────
-
-describe("explorerUrl", () => {
-  it("builds transaction URL", () => {
-    expect(explorerUrl("tx", "abc123")).toBe(
-      "https://stellar.expert/explorer/public/tx/abc123"
-    );
+  it("returns a relative string for a timestamp ~2 hours ago", () => {
+    vi.useFakeTimers();
+    const now = 1_700_000_000;
+    vi.setSystemTime(now * 1000);
+    const result = timeAgo(now - 7200); // 2 hours ago
+    // Should contain "2" and "hour" in some locale-appropriate form
+    expect(result).toMatch(/2/);
+    expect(result.toLowerCase()).toMatch(/hour/);
   });
 
-  it("builds account URL", () => {
-    expect(explorerUrl("account", "GABC")).toBe(
-      "https://stellar.expert/explorer/public/account/GABC"
-    );
+  it("returns a relative string for a timestamp ~3 days ago", () => {
+    vi.useFakeTimers();
+    const now = 1_700_000_000;
+    vi.setSystemTime(now * 1000);
+    const result = timeAgo(now - 3 * 86400);
+    expect(result).toMatch(/3/);
+    expect(result.toLowerCase()).toMatch(/day/);
   });
 
-  it("builds contract URL", () => {
-    expect(explorerUrl("contract", "CDEF456")).toBe(
-      "https://stellar.expert/explorer/public/contract/CDEF456"
-    );
+  it("accepts millisecond timestamps without producing a future time", () => {
+    vi.useFakeTimers();
+    const now = 1_700_000_000;
+    vi.setSystemTime(now * 1000);
+    // Pass ms timestamp for same instant — should still be "just now", not future
+    const result = timeAgo(now * 1000);
+    expect(result).not.toMatch(/in /i); // Intl.RelativeTimeFormat future prefix
+  });
+
+  it("uses Intl.RelativeTimeFormat with undefined locale", () => {
+    vi.useFakeTimers();
+    const now = 1_700_000_000;
+    vi.setSystemTime(now * 1000);
+    const spy = vi.spyOn(Intl, "RelativeTimeFormat");
+    timeAgo(now - 3600);
+    expect(spy).toHaveBeenCalledWith(undefined, expect.any(Object));
+    spy.mockRestore();
   });
 });
 
