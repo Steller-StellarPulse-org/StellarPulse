@@ -5,10 +5,13 @@ import {
   isValidAmount,
   timeUntil,
   formatDate,
+  formatTime,
   calculatePayout,
   calculateOdds,
   bpsToPercent,
   explorerUrl,
+  formatEventTime,
+  timeAgo,
 } from "@/utils/helpers";
 
 // ── formatXLM ─────────────────────────────────────────────────────────────────
@@ -172,21 +175,50 @@ describe("timeUntil", () => {
   });
 });
 
-// ── calculatePayout ───────────────────────────────────────────────────────────
+// ── timestamp formatting ─────────────────────────────────────────────────────
 
-describe("formatDate", () => {
-  it("formats timestamps with a locale, time, and timezone", () => {
+describe("timestamp formatting", () => {
+  const timestamp = Date.UTC(2026, 6, 18, 8, 30) / 1000;
+
+  it("formats a complete timestamp in the requested locale and time zone", () => {
+    const expected = new Intl.DateTimeFormat("en-GB", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+      timeZone: "Asia/Singapore",
+    }).format(new Date(timestamp * 1000));
+
     expect(
-      formatDate(1772111100, { locale: "en-US", timeZone: "UTC" })
-    ).toBe("Feb 26, 2026, 1:05 PM UTC");
+      formatDate(timestamp, "en-GB", { timeZone: "Asia/Singapore" })
+    ).toBe(expected);
   });
 
-  it("uses the requested locale when formatting", () => {
+  it("uses the requested locale instead of hard-coding en-US", () => {
+    const options = { timeZone: "UTC" };
+
+    expect(formatDate(timestamp, "de-DE", options)).not.toBe(
+      formatDate(timestamp, "en-US", options)
+    );
+  });
+
+  it("uses the same local-time rules for compact activity timestamps", () => {
+    const expected = new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZoneName: "short",
+      timeZone: "America/New_York",
+    }).format(new Date(timestamp * 1000));
+
     expect(
-      formatDate(1772111100, { locale: "en-GB", timeZone: "UTC" })
-    ).toBe("26 Feb 2026, 13:05 UTC");
+      formatTime(timestamp, "en-US", { timeZone: "America/New_York" })
+    ).toBe(expected);
   });
 });
+
+// ── calculatePayout ───────────────────────────────────────────────────────────
 
 describe("calculatePayout", () => {
   it("calculates correct payout for sole winner (100% of winning side)", () => {
@@ -289,5 +321,65 @@ describe("explorerUrl", () => {
     expect(explorerUrl("contract", "CDEF456")).toBe(
       "https://stellar.expert/explorer/public/contract/CDEF456"
     );
+  });
+});
+
+// ── formatDate ────────────────────────────────────────────────────────────────
+
+describe("formatDate", () => {
+  it("formats a valid unix timestamp (seconds)", () => {
+    const result = formatDate(1771977600);
+    expect(result).toContain("2026");
+  });
+
+  it("returns an em dash for invalid input", () => {
+    expect(formatDate(0)).toBe("—");
+    expect(formatDate(NaN)).toBe("—");
+    expect(formatDate(-1)).toBe("—");
+  });
+});
+
+// ── formatEventTime ───────────────────────────────────────────────────────────
+
+describe("formatEventTime", () => {
+  it("renders a millisecond timestamp correctly", () => {
+    const ms = 1720872000000;
+    const result = formatEventTime(ms);
+    expect(result).toContain("2024");
+  });
+
+  it("returns an em dash for invalid input", () => {
+    expect(formatEventTime(0)).toBe("—");
+    expect(formatEventTime(NaN)).toBe("—");
+    expect(formatEventTime(-1)).toBe("—");
+  });
+});
+
+// ── timeAgo ────────────────────────────────────────────────────────────────────
+
+describe("timeAgo", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-13T12:00:00Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns 'just now' for a timestamp within 5 seconds", () => {
+    const now = Math.floor(Date.now() / 1000);
+    expect(timeAgo(now - 2)).toBe("just now");
+  });
+
+  it("returns a relative string for past timestamps", () => {
+    const now = Math.floor(Date.now() / 1000);
+    const result = timeAgo(now - 5 * 60);
+    expect(result).toMatch(/\d/);
+  });
+
+  it("returns an em dash for invalid input", () => {
+    expect(timeAgo(0)).toBe("—");
+    expect(timeAgo(NaN)).toBe("—");
   });
 });

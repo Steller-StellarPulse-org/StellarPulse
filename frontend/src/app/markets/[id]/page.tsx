@@ -7,7 +7,6 @@ import { useWallet } from "@/hooks/useWallet";
 import { useToken } from "@/hooks/useToken";
 import { pollMarketEvents } from "@/services/events";
 import { getXlmBalance } from "@/services/soroban";
-import { displayXLM, formatXLM, calculatePayout, truncateAddress } from "@/utils/helpers";
 import {
   WIN_POINTS,
   LOSE_POINTS,
@@ -24,6 +23,12 @@ import TxProgress from "@/components/ui/TxProgress";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import Button from "@/components/ui/Button";
 import type { MarketEvent } from "@/types";
+import {
+  calculatePayout,
+  displayXLM,
+  formatXLM,
+  truncateAddress,
+} from "@/utils/helpers";
 import { FiClock, FiUsers, FiTrendingUp, FiAward, FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 
@@ -319,7 +324,6 @@ export default function MarketDetailPage({
                       </span>
                     </div>
                     <span className="text-xs text-slate-600 shrink-0">
-                      {new Date(evt.timestamp * 1000).toLocaleTimeString()}
                     </span>
                   </div>
                 ))}

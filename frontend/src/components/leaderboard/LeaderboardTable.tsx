@@ -49,7 +49,7 @@ export default function LeaderboardTable({
 
       {lastUpdatedAt && (
         <div className="mb-3 text-right text-xs text-slate-500">
-          Last updated {formatDate(lastUpdatedAt)}
+          Last updated: {formatDate(lastUpdatedAt)}
         </div>
       )}
 
