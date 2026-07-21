@@ -7,7 +7,6 @@ import { useWallet } from "@/hooks/useWallet";
 import { useToken } from "@/hooks/useToken";
 import { pollMarketEvents } from "@/services/events";
 import { getXlmBalance } from "@/services/soroban";
-import { displayXLM, formatXLM, calculatePayout, truncateAddress } from "@/utils/helpers";
 import {
   WIN_POINTS,
   LOSE_POINTS,
@@ -319,7 +318,6 @@ export default function MarketDetailPage({
                       </span>
                     </div>
                     <span className="text-xs text-slate-600 shrink-0">
-                      {new Date(evt.timestamp * 1000).toLocaleTimeString()}
                     </span>
                   </div>
                 ))}

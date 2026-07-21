@@ -26,7 +26,6 @@ export function formatXLM(stroops: bigint): string {
  */
 export function displayXLM(xlm: number): string {
   if (xlm === 0) return "0 XLM";
-  // Show up to 2 decimal places, trim trailing zeros
   const formatted = xlm.toFixed(2).replace(/\.?0+$/, "");
   return `${formatted} XLM`;
 }
@@ -53,6 +52,29 @@ export function isValidAmount(amount: string, balance: number): boolean {
 }
 
 /**
+ * Format a date from a Unix timestamp using the user's locale.
+ * Example: 1712345678 → "Apr 5, 2025" (or localized equivalent)
+ */
+export function formatDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/**
+ * Format a time from a Unix timestamp (hours:minutes) using the user's locale.
+ * Example: 1712345678 → "3:45 PM" (US) or "15:45" (DE)
+ */
+export function formatTime(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
  * Return a human-readable "time until" string from a Unix timestamp.
  * Example: timestamp 2 days from now → "2d 14h 32m"
  */
@@ -73,53 +95,6 @@ export function timeUntil(timestamp: number): string {
   const seconds = diff;
   return `${seconds}s`;
 }
-
-/**
- * Consistent date-time formatter used across the app.
- * All timestamps are Unix seconds. Output is UTC so every user sees
- * the same time regardless of browser locale.
- */
-const DATE_OPTS: Intl.DateTimeFormatOptions = {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "UTC",
-  timeZoneName: "short",
-};
-
-/**
- * Format a Unix timestamp to a locale-aware date string.
- * Timezone-normalized to UTC for consistency across all views.
- */
-export function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString("en-US", DATE_OPTS);
-}
-
-/**
- * Format a Unix timestamp as a relative "time ago" string.
- * Example: 3600 seconds ago → "1h ago"
- */
-export function timeAgo(timestamp: number): string {
-  const now = Math.floor(Date.now() / 1000);
-  const diff = now - timestamp;
-
-  if (diff < 0) return "just now";
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-  return formatDate(timestamp);
-}
-
-/**
- * Calculate a winner's payout from a prediction market.
- *
- * payout = (userNetBet / winningSideTotal) × totalPool
- *
- * All values in XLM (not stroops).
- */
 export function calculatePayout(
   userNetBet: number,
   winningSideTotal: number,
@@ -134,43 +109,13 @@ export function calculatePayout(
  * Returns { yesPercent, noPercent } — each 0-100.
  */
 export function calculateOdds(
-  totalYes: number,
-  totalNo: number
+  yesTotal: number,
+  noTotal: number
 ): { yesPercent: number; noPercent: number } {
-  const total = totalYes + totalNo;
-  if (total <= 0) return { yesPercent: 50, noPercent: 50 };
-
-  const yesPercent = Math.round((totalYes / total) * 100);
-  return { yesPercent, noPercent: 100 - yesPercent };
-}
-
-/**
- * Convert basis points to a percentage string.
- * Example: 200 → "2%", 150 → "1.5%"
- */
-export function bpsToPercent(bps: number): string {
-  const pct = bps / 100;
-  return pct % 1 === 0 ? `${pct}%` : `${pct}%`;
-}
-
-/**
- * Build a Stellar Expert explorer URL.
- * Defaults to "public" (mainnet). Pass "testnet" for testnet links.
- */
-export function explorerUrl(
-  type: "tx" | "account" | "contract",
-  id: string,
-  network: "public" | "testnet" = "public"
-): string {
-  const base = `https://stellar.expert/explorer/${network}`;
-  switch (type) {
-    case "tx":
-      return `${base}/tx/${id}`;
-    case "account":
-      return `${base}/account/${id}`;
-    case "contract":
-      return `${base}/contract/${id}`;
-    default:
-      return `${base}`;
-  }
+  const total = yesTotal + noTotal;
+  if (total === 0) return { yesPercent: 50, noPercent: 50 };
+  return {
+    yesPercent: Math.round((yesTotal / total) * 100),
+    noPercent: Math.round((noTotal / total) * 100),
+  };
 }
