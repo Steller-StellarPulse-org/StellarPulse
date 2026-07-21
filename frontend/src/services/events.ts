@@ -19,34 +19,6 @@ function isKnownEventType(s: string): s is ContractEventType {
   return (EVENT_TYPES as readonly string[]).includes(s);
 }
 
-export function ledgerClosedAtToUnixSeconds(
-  ledgerClosedAt: string | number | Date
-): number {
-  if (typeof ledgerClosedAt === "number") {
-    // Soroban timestamps are Unix seconds; tolerate millisecond values from
-    // callers that already normalized the API response to a number.
-    return Math.floor(
-      ledgerClosedAt >= 1_000_000_000_000
-        ? ledgerClosedAt / 1000
-        : ledgerClosedAt
-    );
-  }
-
-  return Math.floor(new Date(ledgerClosedAt).getTime() / 1000);
-/** Convert the ledger close time to the app's Unix-seconds timestamp contract. */
-export function ledgerClosedAtToUnixSeconds(
-  ledgerClosedAt: string | number | Date
-): number {
-  const timestampMs =
-    ledgerClosedAt instanceof Date
-      ? ledgerClosedAt.getTime()
-      : new Date(ledgerClosedAt).getTime();
-
-  if (!Number.isFinite(timestampMs)) {
-    throw new RangeError("Invalid ledger close timestamp");
-  }
-
-  return Math.floor(timestampMs / 1000);
 const MILLISECOND_TIMESTAMP_THRESHOLD = 100_000_000_000;
 const ISO_TIMESTAMP_WITH_TIME_ZONE =
   /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(?:[zZ]|[+-](\d{2}):(\d{2}))$/;

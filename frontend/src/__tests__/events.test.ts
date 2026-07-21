@@ -1,17 +1,3 @@
-import { describe, expect, it } from "vitest";
-import { ledgerClosedAtToUnixSeconds } from "@/services/events";
-
-describe("event timestamp parsing", () => {
-  it("normalizes ledgerClosedAt to Unix seconds for UI formatters", () => {
-    const closedAt = "2026-02-26T02:05:30.000Z";
-
-    expect(ledgerClosedAtToUnixSeconds(closedAt)).toBe(
-      Date.UTC(2026, 1, 26, 2, 5, 30) / 1000
-    );
-  });
-
-  it("preserves numeric Unix seconds instead of treating them as milliseconds", () => {
-    expect(ledgerClosedAtToUnixSeconds(1771985130)).toBe(1771985130);
 import { describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -39,26 +25,6 @@ import {
 } from "@/services/events";
 
 describe("ledgerClosedAtToUnixSeconds", () => {
-  const expected = Date.UTC(2026, 1, 26, 15, 4) / 1000;
-
-  it.each([
-    ["ISO string", "2026-02-26T15:04:00.000Z"],
-    ["numeric milliseconds", Date.UTC(2026, 1, 26, 15, 4)],
-    ["Date", new Date("2026-02-26T15:04:00.000Z")],
-  ])("accepts a valid %s", (_label, value) => {
-    expect(ledgerClosedAtToUnixSeconds(value)).toBe(expected);
-  });
-
-  it.each([
-    ["invalid string", "not-a-date"],
-    ["missing value", undefined],
-    ["NaN", Number.NaN],
-    ["positive infinity", Number.POSITIVE_INFINITY],
-    ["negative infinity", Number.NEGATIVE_INFINITY],
-  ])("throws RangeError for %s", (_label, value) => {
-    expect(() =>
-      ledgerClosedAtToUnixSeconds(value as unknown as string)
-    ).toThrow(new RangeError("Invalid ledger close timestamp"));
   const expectedSeconds = Date.UTC(2026, 6, 18, 8, 30) / 1000;
 
   it.each([
@@ -87,16 +53,6 @@ describe("ledgerClosedAtToUnixSeconds", () => {
 });
 
 describe("pollMarketEvents", () => {
-  it("discards an event with malformed ledgerClosedAt", async () => {
-    const malformedEvent = {
-      topic: ["market_cancelled", 7],
-      value: {},
-      ledgerClosedAt: "not-a-date",
-      txHash: "malformed-event",
-    };
-
-    mocks.getLatestLedger.mockResolvedValue({ sequence: 100 });
-    mocks.getEvents.mockResolvedValue({ events: [malformedEvent] });
   it("drops an event with a malformed close timestamp", async () => {
     mocks.getLatestLedger.mockResolvedValue({ sequence: 100 });
     mocks.getEvents.mockResolvedValue({
