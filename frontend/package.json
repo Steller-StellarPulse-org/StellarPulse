@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest"
+
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^1.2.0",

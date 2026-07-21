@@ -33,6 +33,90 @@ export function ledgerClosedAtToUnixSeconds(
   }
 
   return Math.floor(new Date(ledgerClosedAt).getTime() / 1000);
+/** Convert the ledger close time to the app's Unix-seconds timestamp contract. */
+export function ledgerClosedAtToUnixSeconds(
+  ledgerClosedAt: string | number | Date
+): number {
+  const timestampMs =
+    ledgerClosedAt instanceof Date
+      ? ledgerClosedAt.getTime()
+      : new Date(ledgerClosedAt).getTime();
+
+  if (!Number.isFinite(timestampMs)) {
+    throw new RangeError("Invalid ledger close timestamp");
+  }
+
+  return Math.floor(timestampMs / 1000);
+const MILLISECOND_TIMESTAMP_THRESHOLD = 100_000_000_000;
+const ISO_TIMESTAMP_WITH_TIME_ZONE =
+  /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(?:[zZ]|[+-](\d{2}):(\d{2}))$/;
+
+/** Normalize an RPC ledger close time to the app's Unix-seconds contract. */
+export function ledgerClosedAtToUnixSeconds(
+  ledgerClosedAt: string | number | Date
+): number {
+  let timestampSeconds: number;
+
+  if (typeof ledgerClosedAt === "number") {
+    timestampSeconds =
+      Math.abs(ledgerClosedAt) >= MILLISECOND_TIMESTAMP_THRESHOLD
+        ? ledgerClosedAt / 1000
+        : ledgerClosedAt;
+  } else if (ledgerClosedAt instanceof Date) {
+    timestampSeconds = ledgerClosedAt.getTime() / 1000;
+  } else {
+    const timestampText = ledgerClosedAt.trim();
+    const match = ISO_TIMESTAMP_WITH_TIME_ZONE.exec(timestampText);
+    if (!match) throw new RangeError("Invalid ledger close timestamp");
+
+    const [, yearText, monthText, dayText, hourText, minuteText, secondText] =
+      match;
+    const year = Number(yearText);
+    const month = Number(monthText);
+    const day = Number(dayText);
+    const hour = Number(hourText);
+    const minute = Number(minuteText);
+    const second = Number(secondText);
+    const offsetHour = Number(match[7] ?? 0);
+    const offsetMinute = Number(match[8] ?? 0);
+    const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+    const daysInMonth = [
+      31,
+      leapYear ? 29 : 28,
+      31,
+      30,
+      31,
+      30,
+      31,
+      31,
+      30,
+      31,
+      30,
+      31,
+    ];
+
+    if (
+      month < 1 ||
+      month > 12 ||
+      day < 1 ||
+      day > daysInMonth[month - 1] ||
+      hour > 23 ||
+      minute > 59 ||
+      second > 59 ||
+      offsetHour > 23 ||
+      offsetMinute > 59
+    ) {
+      throw new RangeError("Invalid ledger close timestamp");
+    }
+
+    timestampSeconds = Date.parse(timestampText) / 1000;
+  }
+
+  if (!Number.isFinite(timestampSeconds)) {
+    throw new RangeError("Invalid ledger close timestamp");
+  }
+
+  return Math.floor(timestampSeconds);
 }
 
 // ── Parse a single event response into MarketEvent ────────────────────────────
