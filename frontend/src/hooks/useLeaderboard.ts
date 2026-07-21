@@ -155,9 +155,7 @@ export function useLeaderboard(
       // Persist assembled leaderboard for instant stale-seed next time
       cache.set(LB_CACHE_KEY, players, 60_000);
       setAllPlayers(players);
-      if (players.length > 0) {
-        setLastUpdated(Math.floor(Date.now() / 1000));
-      }
+      setLastUpdated(Math.floor(Date.now() / 1000));
     } catch (err) {
       if (!mountedRef.current) return;
       setError(
