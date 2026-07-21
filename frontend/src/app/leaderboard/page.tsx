@@ -8,10 +8,11 @@ import EmptyState from "@/components/ui/EmptyState";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import { FiAward } from "react-icons/fi";
 import { timeAgo } from "@/utils/helpers";
+import { formatDate } from "@/utils/helpers";
 
 export default function LeaderboardPage() {
   const [tab, setTab] = useState<LeaderboardTab>("top_predictors");
-  const { data: players, loading, error } = useLeaderboard(tab);
+  const { data: players, loading, error, lastUpdated } = useLeaderboard(tab);
   const { publicKey } = useWallet();
   const [lastUpdated, setLastUpdated] = useState<number>(
     Math.floor(Date.now() / 1000)
@@ -58,10 +59,27 @@ export default function LeaderboardPage() {
             Updated {timeAgo(lastUpdated)}
           </p>
         )}
+        <div className="flex items-center justify-between">
+          <p className="text-slate-400">
+            Rankings update in real-time from onchain data.
+          </p>
+          {!loading && (
+            <p className="text-xs text-slate-500">
+              Updated {timeAgo(lastUpdated)}
+            </p>
+          )}
+        </div>
       </div>
 
       <LeaderboardTabs activeTab={tab} onTabChange={setTab} />
 
+      {lastUpdated && (
+        <div className="mb-3 text-right text-xs text-slate-500">
+          Last updated: {formatDate(lastUpdated)}
+        </div>
+      )}
+
+      {/* Content */}
       <ErrorBoundary fallbackTitle="Leaderboard failed to load">
         {loading ? (
           <div className="card space-y-4 py-8">

@@ -70,7 +70,7 @@ describe("Navbar", () => {
 
   it("renders the logo / brand name", () => {
     render(<Navbar />);
-    expect(screen.getByText(/StellarPulse/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stellar Pulse/i)).toBeInTheDocument();
   });
 
   it("renders all navigation links", () => {
@@ -87,7 +87,7 @@ describe("Navbar", () => {
 
   it("logo links to home page", () => {
     render(<Navbar />);
-    const logo = screen.getByText(/StellarPulse/i);
+    const logo = screen.getByText(/Stellar Pulse/i);
     expect(logo.closest("a")).toHaveAttribute("href", "/");
   });
 

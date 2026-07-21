@@ -129,6 +129,7 @@ export interface MarketEvent {
   user: string;
   marketId: number;
   amount?: number;
+  /** Unix timestamp in seconds. */
   timestamp: number;
   txHash: string;
 }
