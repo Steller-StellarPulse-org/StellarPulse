@@ -487,3 +487,17 @@ Built by **WITTIG** for the Stellar Build-a-10M-Startup challenge.
 
 
 # StellarPulse
+
+## Contributors (Wave)
+
+Thanks to everyone shipping Wave tasks. To get credit:
+
+1. Open a PR that references the Wave issue (e.g. `Fixes #28`).
+2. Keep the PR focused on the acceptance criteria.
+3. After merge, add yourself below (name + GitHub handle + issue number).
+
+| Contributor | GitHub | Wave issue |
+|---|---|---|
+| Example | @your-handle | #28 |
+
+Maintainers may also shout out merged Wave PRs in release notes.
