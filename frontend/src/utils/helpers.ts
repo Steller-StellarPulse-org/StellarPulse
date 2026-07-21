@@ -99,6 +99,7 @@ export function formatTime(
  * Example (en-US, America/New_York): "Jul 12, 2026, 10:30 AM"
  */
 export function formatDate(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleDateString(undefined, {
   // Soroban ledger timestamps are Unix seconds. Guard against accidental
   // millisecond values (> year 2100 in seconds ≈ 4_102_444_800).
   const ms = timestamp > 4_102_444_800 ? timestamp : timestamp * 1000;
