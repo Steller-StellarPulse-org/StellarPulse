@@ -7,6 +7,7 @@ import { useWallet } from "@/hooks/useWallet";
 import { useToken } from "@/hooks/useToken";
 import { pollMarketEvents } from "@/services/events";
 import { getXlmBalance } from "@/services/soroban";
+import { displayXLM, formatTime, formatXLM, calculatePayout, truncateAddress } from "@/utils/helpers";
 import {
   WIN_POINTS,
   LOSE_POINTS,

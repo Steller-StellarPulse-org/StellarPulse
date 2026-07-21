@@ -53,6 +53,41 @@ export function timeUntil(timestamp: number): string {
   return `${diff}s`;
 }
 
+const DATE_TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+};
+
+const TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  hour: "2-digit",
+  minute: "2-digit",
+};
+
+/** Format Unix seconds in the viewer's locale and time zone by default. */
+export function formatDate(
+  timestamp: number,
+  locale?: string | string[],
+  timeZone?: string
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    ...DATE_TIME_OPTIONS,
+    ...(timeZone ? { timeZone } : {}),
+  }).format(new Date(timestamp * 1000));
+}
+
+/** Format Unix seconds as a localized time of day. */
+export function formatTime(
+  timestamp: number,
+  locale?: string | string[],
+  timeZone?: string
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    ...TIME_OPTIONS,
+    ...(timeZone ? { timeZone } : {}),
+  }).format(new Date(timestamp * 1000));
 /**
  * Format a Unix timestamp (seconds) to a locale-aware date/time string.
  *
