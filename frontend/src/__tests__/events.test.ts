@@ -45,6 +45,30 @@ describe("ledgerClosedAtToUnixSeconds", () => {
     expect(() =>
       ledgerClosedAtToUnixSeconds(value as unknown as string)
     ).toThrow(new RangeError("Invalid ledger close timestamp"));
+  const expectedSeconds = Date.UTC(2026, 6, 18, 8, 30) / 1000;
+
+  it.each([
+    ["ISO timestamp", "2026-07-18T08:30:00.000Z"],
+    ["offset timestamp", "2026-07-18T16:30:00+08:00"],
+    ["Date instance", new Date("2026-07-18T08:30:00.000Z")],
+    ["Unix milliseconds", expectedSeconds * 1000],
+    ["Unix seconds", expectedSeconds],
+  ])("normalizes a valid %s", (_label, value) => {
+    expect(ledgerClosedAtToUnixSeconds(value)).toBe(expectedSeconds);
+  });
+
+  it.each([
+    ["blank value", ""],
+    ["invalid string", "not-a-date"],
+    ["impossible calendar date", "2026-02-31T08:30:00Z"],
+    ["timestamp without a time zone", "2026-07-18T08:30:00"],
+    ["NaN", Number.NaN],
+    ["positive infinity", Number.POSITIVE_INFINITY],
+    ["invalid Date", new Date(Number.NaN)],
+  ])("rejects %s", (_label, value) => {
+    expect(() => ledgerClosedAtToUnixSeconds(value)).toThrow(
+      new RangeError("Invalid ledger close timestamp")
+    );
   });
 });
 
@@ -59,6 +83,18 @@ describe("pollMarketEvents", () => {
 
     mocks.getLatestLedger.mockResolvedValue({ sequence: 100 });
     mocks.getEvents.mockResolvedValue({ events: [malformedEvent] });
+  it("drops an event with a malformed close timestamp", async () => {
+    mocks.getLatestLedger.mockResolvedValue({ sequence: 100 });
+    mocks.getEvents.mockResolvedValue({
+      events: [
+        {
+          topic: ["market_cancelled", 7],
+          value: {},
+          ledgerClosedAt: "not-a-date",
+          txHash: "malformed-event",
+        },
+      ],
+    });
 
     await expect(pollMarketEvents()).resolves.toEqual([]);
   });

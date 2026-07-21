@@ -43,10 +43,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {/* Render toasts stacked from top-right */}
-      <div className="fixed top-4 right-4 z-[200] space-y-2 pointer-events-none">
-        {toasts.map((t, i) => (
-          <div key={t.id} className="pointer-events-auto" style={{ marginTop: i > 0 ? "0.5rem" : 0 }}>
+      {/* Narrow viewports: bottom safe-area, full usable width. sm+: top-right stack. */}
+      <div
+        className="fixed z-[200] pointer-events-none flex flex-col gap-2
+          left-3 right-3 bottom-[max(1rem,env(safe-area-inset-bottom))]
+          sm:left-auto sm:right-4 sm:bottom-auto sm:top-4 sm:w-auto sm:max-w-sm"
+      >
+        {toasts.map((t) => (
+          <div key={t.id} className="pointer-events-auto w-full sm:w-auto">
             <Toast
               message={t.message}
               type={t.type}

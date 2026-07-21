@@ -24,6 +24,12 @@ import TxProgress from "@/components/ui/TxProgress";
 import ErrorBoundary from "@/components/ui/ErrorBoundary";
 import Button from "@/components/ui/Button";
 import type { MarketEvent } from "@/types";
+import {
+  calculatePayout,
+  displayXLM,
+  formatXLM,
+  truncateAddress,
+} from "@/utils/helpers";
 import { FiClock, FiUsers, FiTrendingUp, FiAward, FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 
