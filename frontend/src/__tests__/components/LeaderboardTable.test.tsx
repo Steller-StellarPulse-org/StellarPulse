@@ -126,4 +126,9 @@ describe("LeaderboardTable", () => {
     render(<LeaderboardTable players={[]} />);
     expect(screen.getByText("#")).toBeInTheDocument(); // header still renders
   });
+
+  it("renders the leaderboard refresh timestamp", () => {
+    render(<LeaderboardTable players={mockPlayers} lastUpdatedAt={1772111100} />);
+    expect(screen.getByText(/Last updated/i)).toBeInTheDocument();
+  });
 });
