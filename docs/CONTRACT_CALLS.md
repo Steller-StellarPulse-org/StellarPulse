@@ -144,3 +144,109 @@ const claimArgs = {
 - Simulate the transaction before signing.
 - Submit with the correct source account.
 - Refresh market, leaderboard, and wallet state after the transaction succeeds.
+
+
+## Note on CLI naming
+
+Recent releases of the Soroban CLI ship as `stellar` (the `soroban` binary is a
+deprecated alias). The examples above work with both; with a current install
+use `stellar contract invoke` with the same flags.
+
+## Example: full RPC round-trip in TypeScript
+
+The `@stellar/stellar-sdk` flow used by the frontend: build the call, simulate
+it against RPC, sign the assembled transaction, submit, then poll status.
+
+```ts
+import {
+  Contract, Keypair, Networks, TransactionBuilder, BASE_FEE,
+  nativeToScVal, Address, rpc,
+} from "@stellar/stellar-sdk";
+
+const server = new rpc.Server(process.env.STELLAR_RPC_URL!);
+const contract = new Contract(process.env.PREDICTION_MARKET_ID!);
+const keypair = Keypair.fromSecret(process.env.USER_SECRET_KEY!);
+
+const account = await server.getAccount(keypair.publicKey());
+
+const tx = new TransactionBuilder(account, {
+  fee: BASE_FEE,
+  networkPassphrase: process.env.STELLAR_NETWORK_PASSPHRASE!,
+})
+  .addOperation(contract.call(
+    "place_bet",
+    Address.fromString(keypair.publicKey()).toScVal(), // user
+    nativeToScVal(1n, { type: "u64" }),                // market_id
+    nativeToScVal(true),                               // is_yes
+    nativeToScVal(10_000_000n, { type: "i128" }),      // amount (stroops)
+  ))
+  .setTimeout(60)
+  .build();
+
+const prepared = await server.prepareTransaction(tx); // simulates + adds footprint
+prepared.sign(keypair);
+
+const sent = await server.sendTransaction(prepared);
+let status = await server.getTransaction(sent.hash);
+while (status.status === "NOT_FOUND") {
+  await new Promise((r) => setTimeout(r, 1000));
+  status = await server.getTransaction(sent.hash);
+}
+console.log(status.status); // SUCCESS | FAILED
+```
+
+`resolve_market` and `claim` follow the same pattern with their argument lists
+from the ABI table (`resolve_market`: caller address, `u64` market id, `bool`
+outcome; `claim`: user address, `u64` market id).
+
+## Read-only queries (no signing)
+
+View methods can be read through simulation only, without signing or
+submitting:
+
+```ts
+const tx = new TransactionBuilder(account, {
+  fee: BASE_FEE,
+  networkPassphrase: process.env.STELLAR_NETWORK_PASSPHRASE!,
+})
+  .addOperation(contract.call("get_market", nativeToScVal(1n, { type: "u64" })))
+  .setTimeout(30)
+  .build();
+
+const sim = await server.simulateTransaction(tx);
+if (rpc.Api.isSimulationSuccess(sim)) {
+  console.log(sim.result?.retval); // decode with scValToNative
+}
+```
+
+Useful view methods: `get_market(market_id)`, `get_bet(market_id, user)`,
+`get_market_count()`, `get_market_bettors(market_id)`,
+`get_user_bet_count(market_id, user)`.
+
+## Contract error codes
+
+Failed invocations trap with a `MarketError` code. The full mapping from
+`contracts/prediction_market/src/lib.rs`:
+
+| Code | Error | Typical cause |
+|------|-------|---------------|
+| 1 | AlreadyInitialized | `initialize` called twice |
+| 2 | NotInitialized | Contract used before `initialize` |
+| 3 | NotAdmin | Admin-only method called by non-admin |
+| 4 | MarketNotFound | Unknown `market_id` |
+| 5 | MarketExpired | Bet placed after market end |
+| 6 | MarketNotExpired | Resolving before market end |
+| 7 | MarketResolved | Acting on an already-resolved market |
+| 8 | MarketCancelled | Acting on a cancelled market |
+| 9 | MarketNotResolved | `claim` before resolution |
+| 10 | BetTooSmall | Amount below minimum bet |
+| 11 | OppositeSideBet | User already bet the other side |
+| 12 | AlreadyClaimed | Second `claim` for the same market |
+| 13 | NoBetFound | `claim` without a bet |
+| 14 | InvalidAmount | Zero/negative amount |
+| 15 | NoFeesToWithdraw | Fee withdrawal with empty balance |
+| 16 | NotResolver | `resolve_market` by non-resolver |
+| 17 | TooManyBets | Per-user bet cap reached |
+| 18 | NotAuthorized | Caller not permitted |
+| 19 | MarketNotCancelled | Refund on a non-cancelled market |
+| 20 | RateLimitExceeded | Too many operations in a window |
