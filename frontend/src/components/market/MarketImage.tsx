@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 interface MarketImageProps {
@@ -10,28 +10,52 @@ interface MarketImageProps {
   rounded?: "top" | "all";
 }
 
+/**
+ * Only absolute http(s) URLs and root-relative paths are safe to hand to
+ * next/image. Anything else (empty string, whitespace, data:/blob: URIs, or a
+ * bare non-URL string) makes next/image emit a runtime console error, so we
+ * treat those as "no image" and fall back to the placeholder instead.
+ */
+function isRenderableSrc(src?: string): src is string {
+  if (!src) return false;
+  const trimmed = src.trim();
+  if (!trimmed) return false;
+  return (
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://")
+  );
+}
+
 export default function MarketImage({
   src,
   alt,
   className = "",
   rounded = "all",
 }: MarketImageProps) {
-  const initialSrc = src?.trim() ? src : "";
-  const [imgSrc, setImgSrc] = useState(initialSrc);
+  const canRender = isRenderableSrc(src);
   const [failed, setFailed] = useState(false);
 
-  const roundedClass =
-    rounded === "top" ? "rounded-t-2xl" : "rounded-xl";
+  // Reset the failed flag whenever the source changes, so a component instance
+  // that gets reused for a different market (e.g. a recycled list row) does not
+  // keep showing a stale placeholder from a previously broken image.
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
 
-  const showImage = Boolean(imgSrc) && !failed;
+  const roundedClass = rounded === "top" ? "rounded-t-2xl" : "rounded-xl";
+  const showImage = canRender && !failed;
 
   if (!showImage) {
     return (
       <div
+        role="img"
+        aria-label={alt}
         className={`relative w-full aspect-video overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center ${roundedClass} ${className}`}
       >
         <div className="text-center opacity-60">
           <svg
+            aria-hidden="true"
             className="w-12 h-12 mx-auto mb-2 text-slate-600"
             fill="none"
             viewBox="0 0 24 24"
@@ -55,7 +79,7 @@ export default function MarketImage({
       className={`relative w-full aspect-video overflow-hidden bg-surface-hover ${roundedClass} ${className}`}
     >
       <Image
-        src={imgSrc}
+        src={src as string}
         alt={alt}
         fill
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
